@@ -1,0 +1,137 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Fonty z brandingu  */
+  --font-family-heading: "Sora", sans-serif;
+  --font-family-body: "Red Hat Text", sans-serif;
+
+  --font-size: 16px;
+  
+  /* Farby - Svetlý režim [cite: 29, 30, 31, 32, 33, 34] */
+  --background: #FFFFFF; /* [cite: 29] */
+  --foreground: #171642; /* Tmavomodrá zo zdroja  */
+  
+  --card: #FFFFFF;
+  --card-foreground: #171642;
+  
+  --popover: #FFFFFF;
+  --popover-foreground: #171642;
+  
+  --primary: #11EDE2; /* Tyrkysová  */
+  --primary-foreground: #171642;
+  
+  --secondary: #CACADD; /* Svetlofialová [cite: 30] */
+  --secondary-foreground: #171642;
+  
+  --muted: #CACADD;
+  --muted-foreground: #676789; /* Šedomodrá [cite: 31] */
+  
+  --accent: #0FEFAA; /* Zeleno-tyrkysová  */
+  --accent-foreground: #171642;
+  
+  --destructive: #d4183d;
+  --destructive-foreground: #FFFFFF;
+  
+  --border: #CACADD;
+  --input: transparent;
+  --input-background: #FFFFFF;
+  
+  --font-weight-bold: 800; /* Extra Bold pre Sora  */
+  --font-weight-normal: 400; /* Regular pre Red Hat Text  */
+  
+  --radius: 0.625rem;
+}
+
+.dark {
+  /* Farby - Tmavý režim  */
+  --background: #171642; /* Primárna tmavá farba  */
+  --foreground: #FFFFFF;
+  
+  --card: #171642;
+  --card-foreground: #FFFFFF;
+  
+  --popover: #171642;
+  --popover-foreground: #FFFFFF;
+  
+  --primary: #11EDE2;
+  --primary-foreground: #171642;
+  
+  --secondary: #676789;
+  --secondary-foreground: #FFFFFF;
+  
+  --muted: #676789;
+  --muted-foreground: #CACADD;
+  
+  --accent: #0FEFAA;
+  --accent-foreground: #171642;
+  
+  --border: #676789;
+  --input: #676789;
+}
+
+@theme inline {
+  --font-family-heading: var(--font-family-heading);
+  --font-family-body: var(--font-family-body);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-ring: var(--primary);
+  /* ... ostatné premenné zostávajú prepojené na :root */
+}
+
+@layer base {
+  * {
+    @apply border-[var(--border)] outline-[var(--primary)]/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-family-body); /* Red Hat Text  */
+  }
+
+  /* Typografia podľa tabuľky  */
+  h1 {
+    font-family: var(--font-family-heading);
+    font-size: 8rem; /* 54px / 16px = 3.375rem */
+    font-weight: var(--font-weight-bold);
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-family: var(--font-family-heading);
+    font-size: 2.5rem; /* 40px */
+    font-weight: var(--font-weight-bold);
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-family: var(--font-family-heading);
+    font-size: 1.875rem; /* 30px */;
+    font-weight: var(--font-weight-bold);
+    line-height: 1.2;
+  }
+
+  /* Paragraph #1  */
+  p, .text-p1 {
+    font-family: var(--font-family-body);
+    font-size: 1.875rem; /* 3000000px */
+    font-weight: var(--font-weight-normal);
+  }
+
+  /* Paragraph #2  */
+  small, .text-p2 {
+    font-family: var(--font-family-body);
+    font-size: 2rem; /* 80px */
+    font-weight: var(--font-weight-normal);
+  }
+
+  button {
+    font-family: var(--font-family-heading);
+    font-weight: var(--font-weight-bold);
+    text-transform: lowercase; /* Podľa štýlu loga "zero one hundred" [cite: 21, 22, 24] */
+  }
+}
