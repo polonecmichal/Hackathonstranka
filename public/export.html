@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zero One Hundred — AI Request Management System</title>
+<style>
+/* ─── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f8fb; color: #171642; }
+
+/* ─── Design Tokens ────────────────────────────────────────── */
+:root {
+  --navy: #171642;
+  --purple: #676789;
+  --cyan: #11EDE2;
+  --mint: #0FEFAA;
+  --silver: #CACADD;
+  --bg-light: #f8f8fb;
+}
+
+/* ─── Utility ──────────────────────────────────────────────── */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.grid { display: grid; }
+.inline-flex { display: inline-flex; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.gap-6 { gap: 24px; }
+.gap-8 { gap: 32px; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.font-bold { font-weight: 700; }
+.font-extrabold { font-weight: 900; }
+.lowercase { text-transform: lowercase; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.w-full { width: 100%; }
+.max-w-md { max-width: 448px; }
+.max-w-xl { max-width: 576px; }
+.max-w-2xl { max-width: 672px; }
+.max-w-4xl { max-width: 896px; }
+.max-w-5xl { max-width: 1024px; }
+.max-w-7xl { max-width: 1280px; }
+.mx-auto { margin: 0 auto; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.sticky { position: sticky; }
+.overflow-hidden { overflow: hidden; }
+.rounded { border-radius: 6px; }
+.rounded-lg { border-radius: 10px; }
+.rounded-xl { border-radius: 14px; }
+.rounded-2xl { border-radius: 20px; }
+.rounded-full { border-radius: 9999px; }
+.border { border: 1px solid var(--silver); }
+.border-2 { border: 2px solid var(--silver); }
+.shadow { box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.shadow-lg { box-shadow: 0 10px 30px rgba(0,0,0,.12); }
+.shadow-xl { box-shadow: 0 20px 50px rgba(0,0,0,.15); }
+.shadow-2xl { box-shadow: 0 25px 60px rgba(0,0,0,.2); }
+.transition { transition: all 0.2s ease; }
+.cursor-pointer { cursor: pointer; }
+.select-none { user-select: none; }
+.z-10 { z-index: 10; }
+.z-50 { z-index: 50; }
+.top-0 { top: 0; }
+.inset-0 { inset: 0; }
+.min-h-screen { min-height: 100vh; }
+.flex-1 { flex: 1; }
+.flex-shrink-0 { flex-shrink: 0; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-col { flex-direction: column; }
+.space-y-2 > * + * { margin-top: 8px; }
+.space-y-3 > * + * { margin-top: 12px; }
+.space-y-4 > * + * { margin-top: 16px; }
+.space-y-6 > * + * { margin-top: 24px; }
+.space-x-2 > * + * { margin-left: 8px; }
+.break-all { word-break: break-all; }
+
+/* Grid templates */
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4, .grid-lg-2, .grid-lg-3 { grid-template-columns: 1fr; }
+  nav .nav-links { display: none; }
+  .hero-grid { grid-template-columns: 1fr !important; }
+}
+@media (min-width: 769px) {
+  .grid-lg-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-lg-3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Padding / Margin */
+.p-2 { padding: 8px; } .p-3 { padding: 12px; } .p-4 { padding: 16px; }
+.p-6 { padding: 24px; } .p-8 { padding: 32px; } .p-12 { padding: 48px; }
+.px-4 { padding-left: 16px; padding-right: 16px; }
+.px-6 { padding-left: 24px; padding-right: 24px; }
+.px-8 { padding-left: 32px; padding-right: 32px; }
+.py-2 { padding-top: 8px; padding-bottom: 8px; }
+.py-3 { padding-top: 12px; padding-bottom: 12px; }
+.py-4 { padding-top: 16px; padding-bottom: 16px; }
+.py-6 { padding-top: 24px; padding-bottom: 24px; }
+.py-8 { padding-top: 32px; padding-bottom: 32px; }
+.py-12 { padding-top: 48px; padding-bottom: 48px; }
+.py-20 { padding-top: 80px; padding-bottom: 80px; }
+.pt-6 { padding-top: 24px; }
+.pt-8 { padding-top: 32px; }
+.pt-20 { padding-top: 80px; }
+.pb-32 { padding-bottom: 128px; }
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-4 { margin-top: 16px; }
+.mt-6 { margin-top: 24px; }
+.mt-8 { margin-top: 32px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-6 { margin-bottom: 24px; }
+.mb-8 { margin-bottom: 32px; }
+.mb-12 { margin-bottom: 48px; }
+.mb-16 { margin-bottom: 64px; }
+.mr-2 { margin-right: 8px; }
+.ml-auto { margin-left: auto; }
+
+/* Font sizes */
+.text-xs { font-size: 12px; line-height: 1.4; }
+.text-sm { font-size: 14px; line-height: 1.5; }
+.text-base { font-size: 16px; line-height: 1.6; }
+.text-lg { font-size: 18px; line-height: 1.5; }
+.text-xl { font-size: 20px; line-height: 1.4; }
+.text-2xl { font-size: 24px; line-height: 1.3; }
+.text-3xl { font-size: 30px; line-height: 1.2; }
+.text-4xl { font-size: 36px; line-height: 1.15; }
+.text-5xl { font-size: 48px; line-height: 1.1; }
+
+/* Colors */
+.text-white { color: #fff; }
+.text-navy { color: var(--navy); }
+.text-purple { color: var(--purple); }
+.text-cyan { color: var(--cyan); }
+.text-silver { color: var(--silver); }
+.text-gray { color: #6b7280; }
+.text-green { color: #16a34a; }
+.text-blue { color: #2563eb; }
+.text-red { color: #dc2626; }
+.text-orange { color: #ea580c; }
+.text-yellow { color: #ca8a04; }
+
+.bg-white { background: #fff; }
+.bg-navy { background: var(--navy); }
+.bg-cyan { background: var(--cyan); }
+.bg-silver-light { background: rgba(202,202,221,.1); }
+.bg-cyan-light { background: rgba(17,237,226,.1); }
+.bg-green-light { background: #f0fdf4; }
+.bg-red-light { background: #fef2f2; }
+.bg-blue-light { background: #eff6ff; }
+.bg-yellow-light { background: #fefce8; }
+.bg-orange-light { background: #fff7ed; }
+.bg-purple-light { background: #f5f3ff; }
+.bg-gray-light { background: #f9fafb; }
+
+/* Border colors */
+.border-cyan { border-color: var(--cyan); }
+.border-silver { border-color: var(--silver); }
+.border-green { border-color: #86efac; }
+.border-red { border-color: #fca5a5; }
+.border-blue { border-color: #93c5fd; }
+.border-yellow { border-color: #fde047; }
+.border-navy { border-color: var(--navy); }
+
+/* ─── Buttons ──────────────────────────────────────────────── */
+button, .btn { cursor: pointer; border: none; outline: none; font-family: inherit; font-size: 14px; font-weight: 700; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; padding: 10px 20px; text-decoration: none; }
+.btn-primary { background: var(--cyan); color: var(--navy); }
+.btn-primary:hover { background: var(--mint); }
+.btn-secondary { background: transparent; color: var(--navy); border: 1px solid var(--silver); }
+.btn-secondary:hover { border-color: var(--cyan); }
+.btn-ghost { background: transparent; color: var(--purple); }
+.btn-ghost:hover { color: var(--navy); background: rgba(202,202,221,.2); }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-success { background: #16a34a; color: #fff; }
+.btn-success:hover { background: #15803d; }
+.btn-lg { padding: 14px 28px; font-size: 16px; border-radius: 12px; }
+.btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 8px; }
+button:disabled, .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ─── Inputs ───────────────────────────────────────────────── */
+input, textarea, select {
+  width: 100%; border: 1px solid var(--silver); border-radius: 8px;
+  padding: 10px 14px; font-size: 14px; font-family: inherit;
+  outline: none; transition: border-color 0.2s; background: #fff;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(17,237,226,.15); }
+label { font-size: 13px; font-weight: 700; color: var(--navy); display: block; margin-bottom: 5px; }
+textarea { resize: vertical; }
+
+/* ─── Nav ──────────────────────────────────────────────────── */
+nav {
+  background: #fff; border-bottom: 1px solid var(--silver);
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 72px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { display: flex; align-items: center; gap: 12px; }
+.logo-dot { width: 44px; height: 44px; background: var(--cyan); border-radius: 50%; flex-shrink: 0; }
+.logo-text { font-size: 22px; font-weight: 900; color: var(--navy); text-transform: lowercase; }
+.nav-links { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.nav-link { background: transparent; border: none; color: var(--navy); font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all .2s; font-family: inherit; text-transform: lowercase; }
+.nav-link:hover { background: rgba(202,202,221,.2); color: var(--navy); }
+.nav-link.active { color: var(--cyan); }
+.nav-cta { background: var(--cyan); color: var(--navy); border: none; font-size: 14px; font-weight: 900; padding: 10px 20px; border-radius: 10px; cursor: pointer; transition: all .2s; font-family: inherit; }
+.nav-cta:hover { background: var(--mint); }
+
+/* ─── Pages ────────────────────────────────────────────────── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ─── Cards ────────────────────────────────────────────────── */
+.card { background: #fff; border: 1px solid var(--silver); border-radius: 16px; padding: 24px; transition: all .2s; }
+.card:hover { box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+.card-hover:hover { border-color: var(--cyan); }
+
+/* ─── Badges ───────────────────────────────────────────────── */
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; border: 1px solid; }
+.badge-cyan { background: rgba(17,237,226,.15); color: var(--navy); border-color: var(--cyan); }
+.badge-green { background: #dcfce7; color: #15803d; border-color: #86efac; }
+.badge-blue { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+.badge-orange { background: #ffedd5; color: #c2410c; border-color: #fdba74; }
+.badge-red { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+.badge-gray { background: #f3f4f6; color: #4b5563; border-color: #d1d5db; }
+.badge-purple { background: #f3e8ff; color: #7e22ce; border-color: #d8b4fe; }
+.badge-yellow { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+
+/* ─── Alerts ───────────────────────────────────────────────── */
+.alert { border-radius: 10px; padding: 12px 16px; font-size: 14px; border: 1px solid; }
+.alert-error { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+.alert-success { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.alert-info { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+.alert-warning { background: #fffbeb; border-color: #fde047; color: #92400e; }
+
+/* ─── Stat Cards ───────────────────────────────────────────── */
+.stat-card { background: #fff; border: 1px solid var(--silver); border-radius: 14px; padding: 24px; }
+.stat-num { font-size: 32px; font-weight: 900; color: var(--navy); margin-top: 4px; }
+.stat-label { font-size: 13px; font-weight: 700; color: var(--purple); }
+.stat-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+/* ─── Ticket Card ──────────────────────────────────────────── */
+.ticket-card { background: #fff; border: 1px solid var(--silver); border-radius: 14px; padding: 24px; transition: all .2s; }
+.ticket-card:hover { border-color: var(--cyan); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+
+/* ─── Spinner ──────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(17,237,226,.3); border-top-color: var(--cyan); border-radius: 50%; animation: spin .8s linear infinite; }
+.spin-lg { width: 40px; height: 40px; border-width: 4px; }
+
+/* ─── Hero ─────────────────────────────────────────────────── */
+.hero { background: #fff; padding: 80px 24px 120px; overflow: hidden; position: relative; }
+.hero-bg { position: absolute; top: 0; right: 0; width: 600px; height: 600px; background: var(--cyan); border-radius: 50%; opacity: .08; transform: translate(33%, -50%); pointer-events: none; }
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; max-width: 1280px; margin: 0 auto; position: relative; z-index: 1; }
+.hero-tag { display: inline-block; background: rgba(17,237,226,.1); color: var(--navy); border-radius: 999px; padding: 8px 20px; font-size: 13px; font-weight: 700; margin-bottom: 24px; }
+.hero-title { font-size: 54px; font-weight: 900; color: var(--navy); line-height: 1.1; margin-bottom: 32px; }
+.hero-title span { color: var(--cyan); }
+.hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+.hero-integrations { display: flex; align-items: center; gap: 20px; margin-top: 28px; }
+.integration-icon { width: 28px; height: 28px; color: var(--cyan); font-size: 20px; }
+.hero-preview { background: #fff; border-radius: 24px; box-shadow: 0 25px 60px rgba(0,0,0,.15); padding: 32px; border: 1px solid var(--silver); }
+.hero-preview-visual { aspect-ratio: 16/9; background: linear-gradient(135deg, rgba(17,237,226,.2), rgba(15,239,170,.2)); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+.chat-icon-big { font-size: 80px; color: var(--cyan); opacity: .7; }
+
+/* ─── Features Section ─────────────────────────────────────── */
+.features-section { background: rgba(202,202,221,.1); padding: 80px 24px; position: relative; overflow: hidden; }
+.features-bg { position: absolute; bottom: 0; left: 0; width: 500px; height: 500px; background: var(--mint); border-radius: 50%; opacity: .08; transform: translate(-33%, 50%); pointer-events: none; }
+.feature-card { background: #fff; border: 1px solid var(--silver); border-radius: 20px; padding: 28px; transition: all .2s; }
+.feature-card:hover { border-color: var(--cyan); box-shadow: 0 16px 40px rgba(0,0,0,.1); }
+.feature-icon { width: 56px; height: 56px; background: var(--cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; transition: transform .2s; }
+.feature-card:hover .feature-icon { transform: scale(1.1); }
+
+/* ─── Section Header ───────────────────────────────────────── */
+.section-header { text-align: center; margin-bottom: 64px; }
+.section-title { font-size: 36px; font-weight: 900; color: var(--navy); margin-bottom: 12px; }
+.section-sub { font-size: 18px; color: var(--purple); }
+
+/* ─── Integration cards ────────────────────────────────────── */
+.int-card { background: #fff; border: 1px solid var(--silver); border-radius: 16px; padding: 24px; }
+.int-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,.1); }
+.int-icon { width: 52px; height: 52px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 16px; flex-shrink: 0; }
+.int-feature { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--purple); margin-top: 8px; }
+.int-feature::before { content: "✓"; color: #16a34a; font-weight: 900; flex-shrink: 0; }
+
+/* ─── CTA Section ──────────────────────────────────────────── */
+.cta-section { background: var(--navy); padding: 80px 24px; position: relative; overflow: hidden; }
+.cta-bg1 { position: absolute; top: 50%; right: 0; width: 400px; height: 400px; background: var(--cyan); border-radius: 50%; opacity: .15; transform: translate(50%, -50%); }
+.cta-bg2 { position: absolute; bottom: 0; left: 0; width: 300px; height: 300px; background: var(--mint); border-radius: 50%; opacity: .15; transform: translate(-50%, 50%); }
+.cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.btn-outline-cyan { background: transparent; border: 2px solid var(--cyan); color: var(--cyan); font-weight: 900; padding: 14px 28px; border-radius: 12px; font-size: 16px; cursor: pointer; transition: all .2s; font-family: inherit; }
+.btn-outline-cyan:hover { background: rgba(17,237,226,.1); }
+
+/* ─── Login Page ───────────────────────────────────────────── */
+.login-page { min-height: 100vh; background: linear-gradient(135deg, var(--navy), var(--purple)); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.login-box { background: #fff; border-radius: 24px; padding: 40px; width: 100%; max-width: 440px; box-shadow: 0 25px 60px rgba(0,0,0,.3); }
+.role-toggle { display: flex; gap: 8px; margin-bottom: 24px; }
+.role-btn { flex: 1; padding: 12px; border-radius: 12px; font-weight: 900; font-size: 14px; cursor: pointer; border: none; font-family: inherit; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.role-btn.active { background: var(--cyan); color: var(--navy); }
+.role-btn:not(.active) { background: rgba(202,202,221,.2); color: var(--purple); }
+.role-btn:not(.active):hover { background: rgba(202,202,221,.4); }
+
+/* ─── Dashboard Header ─────────────────────────────────────── */
+.dash-header { background: #fff; border-bottom: 1px solid var(--silver); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.dash-header-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; height: 80px; display: flex; align-items: center; justify-content: space-between; }
+.dash-title { font-size: 17px; font-weight: 900; color: var(--navy); }
+.dash-sub { font-size: 13px; color: var(--purple); }
+.divider-v { width: 1px; height: 32px; background: var(--silver); margin: 0 16px; }
+
+/* ─── Dashboard Content ────────────────────────────────────── */
+.dash-content { max-width: 1280px; margin: 0 auto; padding: 32px 24px; }
+
+/* ─── Chatbot ──────────────────────────────────────────────── */
+.chatbot-wrapper { border-radius: 20px; overflow: hidden; height: 520px; display: flex; flex-direction: column; border: 1px solid var(--silver); box-shadow: 0 8px 30px rgba(0,0,0,.12); }
+.chatbot-header { background: var(--navy); color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.chatbot-dot { width: 10px; height: 10px; background: var(--cyan); border-radius: 50%; }
+.chatbot-messages { flex: 1; overflow-y: auto; padding: 16px; background: #f8f8fb; display: flex; flex-direction: column; gap: 12px; }
+.chatbot-msg { max-width: 80%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+.chatbot-msg.bot { background: #fff; border: 1px solid var(--silver); align-self: flex-start; border-radius: 4px 14px 14px 14px; }
+.chatbot-msg.user { background: var(--navy); color: #fff; align-self: flex-end; border-radius: 14px 14px 4px 14px; }
+.chatbot-input-row { padding: 12px 16px; background: #fff; border-top: 1px solid var(--silver); display: flex; gap: 8px; flex-shrink: 0; }
+.chatbot-input { border: 1px solid var(--silver); border-radius: 10px; padding: 10px 14px; flex: 1; font-size: 14px; font-family: inherit; }
+.chatbot-input:focus { border-color: var(--cyan); outline: none; }
+.chatbot-send { background: var(--cyan); border: none; border-radius: 10px; padding: 10px 16px; cursor: pointer; color: var(--navy); font-size: 16px; font-weight: 900; transition: background .2s; }
+.chatbot-send:hover { background: var(--mint); }
+
+/* ─── Ticket table ─────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-size: 12px; font-weight: 700; color: var(--purple); padding: 10px 16px; background: rgba(202,202,221,.1); border-bottom: 1px solid var(--silver); }
+td { padding: 14px 16px; border-bottom: 1px solid rgba(202,202,221,.5); color: var(--navy); vertical-align: middle; }
+tr:hover td { background: rgba(202,202,221,.05); }
+
+/* ─── Modal ────────────────────────────────────────────────── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+.modal-box { background: #fff; border-radius: 20px; padding: 32px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,.3); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--purple); line-height: 1; padding: 4px; border-radius: 6px; }
+.modal-close:hover { background: rgba(202,202,221,.2); }
+
+/* ─── Request Type Card ────────────────────────────────────── */
+.req-type-card { padding: 20px 24px; background: #fff; border: 2px solid var(--silver); border-radius: 14px; display: flex; align-items: center; gap: 12px; transition: all .2s; cursor: pointer; }
+.req-type-card:hover { border-color: var(--cyan); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+.req-type-card:hover .req-type-icon { background: var(--cyan); }
+.req-type-card:hover .req-type-icon span { color: var(--navy); }
+.req-type-icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(17,237,226,.1); display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.req-type-icon span { font-size: 18px; color: var(--cyan); }
+
+/* ─── Footer ───────────────────────────────────────────────── */
+footer { background: var(--navy); border-top: 1px solid #676789; color: #fff; padding: 48px 24px; text-align: center; }
+
+/* ─── Setup Guide ──────────────────────────────────────────── */
+.setup-bg { min-height: 100vh; background: linear-gradient(135deg, var(--navy), var(--purple)); padding: 48px 24px; }
+.step-card { display: flex; gap: 16px; padding: 20px 24px; border-radius: 14px; border: 2px solid; }
+.step-num { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; flex-shrink: 0; }
+
+/* ─── DB Setup ─────────────────────────────────────────────── */
+.col-badge { display: inline-flex; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: monospace; border: 1px solid; margin: 3px; }
+.col-badge-emp { background: rgba(17,237,226,.15); border-color: var(--cyan); color: var(--navy); }
+.col-badge-cust { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+.col-badge-assign { background: #f3e8ff; border-color: #d8b4fe; color: #7e22ce; }
+.col-badge-default { background: rgba(202,202,221,.2); border-color: var(--silver); color: var(--purple); }
+
+/* ─── Admin Kanban ─────────────────────────────────────────── */
+.kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media (max-width: 900px) { .kanban { grid-template-columns: 1fr; } }
+.kanban-col { border-radius: 14px; border: 1px solid var(--silver); overflow: hidden; }
+.kanban-col-header { padding: 14px 20px; font-weight: 900; font-size: 15px; display: flex; align-items: center; gap: 10px; }
+.kanban-col-body { padding: 12px; min-height: 120px; display: flex; flex-direction: column; gap: 10px; }
+.kanban-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+/* ─── Tabs ─────────────────────────────────────────────────── */
+.tabs { display: flex; gap: 4px; background: rgba(202,202,221,.2); border-radius: 10px; padding: 4px; margin-bottom: 24px; }
+.tab-btn { flex: 1; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 14px; transition: all .2s; background: transparent; color: var(--purple); }
+.tab-btn.active { background: #fff; color: var(--navy); box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ─── Toast ────────────────────────────────────────────────── */
+#toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+.toast { background: var(--navy); color: #fff; padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,.2); display: flex; align-items: center; gap: 10px; min-width: 240px; animation: slideIn .3s ease; }
+.toast.success { background: #15803d; }
+.toast.error { background: #b91c1c; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ─── Demo data page ───────────────────────────────────────── */
+.demo-ticket-preview { background: rgba(202,202,221,.15); border: 1px solid var(--silver); border-radius: 10px; padding: 14px 18px; }
+
+/* ─── Chat suggestion chip ─────────────────────────────────── */
+.chat-chip { background: rgba(17,237,226,.1); border: 1px solid var(--cyan); color: var(--navy); border-radius: 999px; padding: 5px 14px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.chat-chip:hover { background: var(--cyan); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- NAV                                                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<nav id="main-nav">
+  <div class="nav-inner">
+    <div class="nav-logo" style="cursor:pointer" onclick="showPage('home')">
+      <div class="logo-dot"></div>
+      <span class="logo-text">zero one hundred</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="showPage('setup')">setup</button>
+      <button class="nav-link" onclick="showPage('db-setup')">db diagnostika</button>
+      <button class="nav-link" onclick="showPage('dashboard')">dashboard</button>
+      <button class="nav-link" onclick="showPage('admin')">admin</button>
+      <button class="nav-link" onclick="showPage('login')">zamestnanec</button>
+      <button class="nav-link" onclick="showPage('create-ticket')">nový ticket</button>
+      <button class="nav-cta" onclick="openModal('request-modal')">kontaktujte nás</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: HOME                                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid">
+      <div>
+        <div class="hero-tag">AI-powered request management</div>
+        <h1 class="hero-title">Inteligentný systém pre <span>Zero one hundred</span></h1>
+        <div class="hero-btns">
+          <button class="btn btn-primary btn-lg" onclick="toggleChatbot()">💬 Spustiť AI chatbot</button>
+          <button class="btn btn-secondary btn-lg" onclick="openModal('request-modal')">Odoslať žiadosť →</button>
+        </div>
+        <div class="hero-integrations">
+          <span class="text-sm text-purple font-bold">Integrácia s:</span>
+          <span style="font-size:24px;">📸</span>
+          <span style="font-size:24px;">📘</span>
+          <span style="font-size:24px;">💬</span>
+        </div>
+      </div>
+      <div>
+        <div id="chatbot-container" class="hidden">
+          <div class="chatbot-wrapper">
+            <div class="chatbot-header">
+              <div class="chatbot-dot"></div>
+              <span style="font-weight:900;font-size:15px;">AI Asistent — Zero One Hundred</span>
+              <button onclick="toggleChatbot()" style="margin-left:auto;background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <div id="chatbot-messages" class="chatbot-messages">
+              <div class="chatbot-msg bot">Dobrý deň! Som váš AI asistent. Môžem vám pomôcť s:
+
+• Hľadaním investorov
+• Hľadaním zamestnancov
+• Speaking príležitosťami
+• Marketingovou podporou
+• Sales podporou
+• Hľadaním klientov
+
+Ako vám môžem pomôcť?</div>
+            </div>
+            <div style="padding:10px 16px;background:#f8f8fb;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--silver)">
+              <span class="chat-chip" onclick="sendQuickMsg('Hľadám investora')">💰 Investor</span>
+              <span class="chat-chip" onclick="sendQuickMsg('Hľadám zamestnanca')">👤 Zamestnanec</span>
+              <span class="chat-chip" onclick="sendQuickMsg('Marketing podpora')">📢 Marketing</span>
+              <span class="chat-chip" onclick="sendQuickMsg('Speaking event')">🎤 Speaking</span>
+            </div>
+            <div class="chatbot-input-row">
+              <input class="chatbot-input" id="chatbot-input" type="text" placeholder="Napíšte správu..." onkeydown="if(event.key==='Enter')sendChatMessage()" />
+              <button class="chatbot-send" onclick="sendChatMessage()">➤</button>
+            </div>
+          </div>
+        </div>
+        <div id="chatbot-placeholder" class="hero-preview">
+          <div class="hero-preview-visual">
+            <div style="font-size:80px;opacity:.5;">💬</div>
+          </div>
+          <h3 style="font-size:28px;font-weight:900;color:var(--navy);margin-bottom:12px;">AI asistent je pripravený</h3>
+          <p style="color:var(--purple);">Kliknite na tlačidlo vyššie pre spustenie inteligentného chatbota, ktorý vám pomôže s kategorizáciou a spracovaním žiadostí.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section">
+    <div class="features-bg"></div>
+    <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+      <div class="section-header">
+        <h2 class="section-title lowercase">Kľúčové funkcie systému</h2>
+        <p class="section-sub">Komplexné riešenie pre efektívne riadenie žiadostí</p>
+      </div>
+      <div class="grid grid-lg-3 gap-8">
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:8px;">Zadávanie žiadostí</h3>
+          <p style="color:var(--purple);font-size:14px;">Startupy, investori a partneri môžu jednoducho zadať svoje potreby s relevantnými informáciami.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:8px;">Automatická kategorizácia</h3>
+          <p style="color:var(--purple);font-size:14px;">AI systém automaticky určí typ žiadosti a pridelí správnu kategóriu.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h3 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:8px;">Prioritizácia</h3>
+          <p style="color:var(--purple);font-size:14px;">Inteligentné určenie dôležitosti každej žiadosti na základe kontextu.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">👥</div>
+          <h3 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:8px;">Matchmaking</h3>
+          <p style="color:var(--purple);font-size:14px;">Systém navrhuje najvhodnejšie osoby z tímu pre riešenie konkrétnej žiadosti.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:8px;">Sledovanie stavu</h3>
+          <p style="color:var(--purple);font-size:14px;">Prehľadná evidencia vyriešených žiadostí a hodnoty, ktorú priniesli.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔗</div>
+          <h3 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:8px;">Integrácie</h3>
+          <p style="color:var(--purple);font-size:14px;">Priame napojenie na Instagram, Facebook, Discord a Notion.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Request Types -->
+  <section style="background:#fff;padding:80px 24px;">
+    <div style="max-width:1280px;margin:0 auto;">
+      <div class="section-header">
+        <h2 class="section-title">Typy podporovaných žiadostí</h2>
+        <p class="section-sub">Systém spracováva širokú škálu požiadaviek</p>
+      </div>
+      <div class="grid grid-lg-3 gap-6">
+        <div class="req-type-card"><div class="req-type-icon"><span>💰</span></div><span style="font-weight:900;color:var(--navy);">hľadanie investora</span></div>
+        <div class="req-type-card"><div class="req-type-icon"><span>👤</span></div><span style="font-weight:900;color:var(--navy);">hľadanie zamestnanca</span></div>
+        <div class="req-type-card"><div class="req-type-icon"><span>🎤</span></div><span style="font-weight:900;color:var(--navy);">speaking príležitosti</span></div>
+        <div class="req-type-card"><div class="req-type-icon"><span>📢</span></div><span style="font-weight:900;color:var(--navy);">marketingová podpora</span></div>
+        <div class="req-type-card"><div class="req-type-icon"><span>🛒</span></div><span style="font-weight:900;color:var(--navy);">sales podpora</span></div>
+        <div class="req-type-card"><div class="req-type-icon"><span>🔍</span></div><span style="font-weight:900;color:var(--navy);">hľadanie klientov</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Integrations -->
+  <section style="background:#f9fafb;padding:80px 24px;">
+    <div style="max-width:1280px;margin:0 auto;">
+      <div class="section-header">
+        <h2 class="section-title">Integrácie s populárnymi platformami</h2>
+        <p class="section-sub">Seamless pripojenie na vaše existujúce nástroje a sociálne siete</p>
+      </div>
+      <div class="grid grid-lg-2 gap-8 mb-12">
+        <div class="int-card">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+            <div class="int-icon" style="background:linear-gradient(135deg,#7c3aed,#db2777,#ea580c)">📸</div>
+            <div><div style="font-size:17px;font-weight:900;color:var(--navy);">Instagram</div><span class="badge badge-gray" style="margin-top:4px;">Plánované</span></div>
+          </div>
+          <p style="color:var(--purple);font-size:14px;margin-bottom:12px;">Automatické spracovanie správ z Instagram DM. Žiadosti sa automaticky kategorizujú a pridajú do systému.</p>
+          <div class="int-feature">Webhook pre Instagram Business API</div>
+          <div class="int-feature">Automatické odpovede na správy</div>
+          <div class="int-feature">Status updates v DM</div>
+        </div>
+        <div class="int-card">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+            <div class="int-icon" style="background:#2563eb;">📘</div>
+            <div><div style="font-size:17px;font-weight:900;color:var(--navy);">Facebook Messenger</div><span class="badge badge-gray" style="margin-top:4px;">Plánované</span></div>
+          </div>
+          <p style="color:var(--purple);font-size:14px;margin-bottom:12px;">Integrácia s Facebook Messenger pre príjem žiadostí priamo z Facebooku. Automatické spracovanie a odpovede.</p>
+          <div class="int-feature">Messenger webhook integration</div>
+          <div class="int-feature">Automatické parsovanie správ</div>
+          <div class="int-feature">Bot odpovede</div>
+        </div>
+        <div class="int-card">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+            <div class="int-icon" style="background:#4f46e5;">💬</div>
+            <div><div style="font-size:17px;font-weight:900;color:var(--navy);">Discord</div><span class="badge badge-gray" style="margin-top:4px;">Plánované</span></div>
+          </div>
+          <p style="color:var(--purple);font-size:14px;margin-bottom:12px;">Discord bot s príkazmi pre odosielanie žiadostí. Notifikácie v Discord kanáloch o nových žiadostiach.</p>
+          <div class="int-feature">Slash commands pre žiadosti</div>
+          <div class="int-feature">Channel notifications</div>
+          <div class="int-feature">Status updates v Discord</div>
+        </div>
+        <div class="int-card">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+            <div class="int-icon" style="background:#111;">📝</div>
+            <div><div style="font-size:17px;font-weight:900;color:var(--navy);">Notion</div><span class="badge badge-gray" style="margin-top:4px;">Plánované</span></div>
+          </div>
+          <p style="color:var(--purple);font-size:14px;margin-bottom:12px;">Obojsmerná synchronizácia s Notion databázou. Všetky žiadosti sa automaticky exportujú do vášho Notion workspace.</p>
+          <div class="int-feature">Real-time sync s Notion DB</div>
+          <div class="int-feature">Custom properties mapping</div>
+          <div class="int-feature">Automatic updates</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-bg1"></div>
+    <div class="cta-bg2"></div>
+    <div style="max-width:896px;margin:0 auto;text-align:center;position:relative;z-index:1;">
+      <h2 style="font-size:36px;font-weight:900;color:#fff;margin-bottom:20px;text-transform:lowercase;">Pripravení začať?</h2>
+      <p style="font-size:18px;color:var(--silver);margin-bottom:32px;">Spustite AI chatbota alebo odošlite žiadosť priamo cez formulár</p>
+      <div class="cta-btns">
+        <button class="btn btn-primary btn-lg" onclick="toggleChatbot();window.scrollTo({top:0,behavior:'smooth'})">💬 chatovať s AI</button>
+        <button class="btn-outline-cyan" onclick="showPage('dashboard')">Otvoriť dashboard</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
+      <div style="width:40px;height:40px;background:var(--cyan);border-radius:50%;"></div>
+      <span style="font-size:18px;font-weight:900;text-transform:lowercase;">zero one hundred</span>
+    </div>
+    <p style="color:var(--silver);font-size:14px;">Inteligentný systém zero one hundred © 2026</p>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: LOGIN                                                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-login" class="page">
+  <div class="login-page">
+    <div style="width:100%;max-width:440px;">
+      <div style="text-align:center;margin-bottom:32px;">
+        <div style="display:inline-flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:48px;height:48px;background:var(--cyan);border-radius:50%;"></div>
+          <span style="font-size:28px;font-weight:900;color:#fff;text-transform:lowercase;">zero one hundred</span>
+        </div>
+        <h1 style="font-size:22px;font-weight:900;color:#fff;">Prihlásenie</h1>
+      </div>
+      <div class="login-box">
+        <div class="role-toggle">
+          <button class="role-btn active" id="role-emp" onclick="setRole('employee')">👤 Zamestnanec</button>
+          <button class="role-btn" id="role-cust" onclick="setRole('customer')">👥 Zákazník</button>
+        </div>
+        <div class="space-y-6">
+          <div>
+            <label id="login-label">Meno zamestnanca</label>
+            <input type="text" id="login-input" placeholder="Zadajte meno zamestnanca" />
+          </div>
+          <div id="login-error" class="alert alert-error hidden"></div>
+          <button class="btn btn-primary w-full" style="font-size:16px;padding:14px;" onclick="doLogin()" id="login-btn">
+            🔑 Prihlásiť sa
+          </button>
+        </div>
+        <div style="margin-top:20px;text-align:center;">
+          <button class="btn btn-ghost" onclick="showPage('home')">← Späť na hlavnú stránku</button>
+        </div>
+      </div>
+      <p style="text-align:center;color:var(--silver);margin-top:20px;font-size:13px;" id="login-hint">
+        Zadajte svoje meno pre prihlásenie ako zamestnanec
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: EMPLOYEE DASHBOARD                                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-employee-dash" class="page">
+  <div style="min-height:100vh;background:rgba(202,202,221,.1);">
+    <div class="dash-header">
+      <div class="dash-header-inner">
+        <div style="display:flex;align-items:center;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;background:var(--cyan);border-radius:50%;"></div>
+            <span style="font-size:18px;font-weight:900;color:var(--navy);text-transform:lowercase;">zero one hundred</span>
+          </div>
+          <div class="divider-v"></div>
+          <div>
+            <div class="dash-title">Dashboard zamestnanca</div>
+            <div class="dash-sub" id="emp-dash-name"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-secondary btn-sm" onclick="loadEmpDash()">🔄 Obnoviť</button>
+          <button class="btn btn-ghost btn-sm" onclick="doLogout('employee')">Odhlásiť sa</button>
+        </div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="grid grid-3 gap-6 mb-8" id="emp-stats">
+        <div class="stat-card"><div class="stat-label">Celkový počet</div><div class="stat-num" id="emp-stat-total">0</div></div>
+        <div class="stat-card"><div class="stat-label">V progrese</div><div class="stat-num" id="emp-stat-progress">0</div></div>
+        <div class="stat-card"><div class="stat-label">Vyriešené</div><div class="stat-num" id="emp-stat-done">0</div></div>
+      </div>
+      <div id="emp-error" class="alert alert-error hidden mb-6"></div>
+      <h2 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:16px;">Moje tickety</h2>
+      <div id="emp-tickets-loading" class="text-center py-12 hidden">
+        <div class="spin spin-lg" style="margin:0 auto 16px;"></div>
+        <p style="color:var(--purple);">Načítavam tickety...</p>
+      </div>
+      <div id="emp-tickets-empty" class="card text-center py-12 hidden">
+        <div style="font-size:48px;margin-bottom:16px;">📭</div>
+        <p style="color:var(--purple);font-size:16px;">Zatiaľ nemáte žiadne priradené tickety</p>
+      </div>
+      <div class="grid grid-lg-3 gap-6" id="emp-tickets-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: CUSTOMER DASHBOARD                                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-customer-dash" class="page">
+  <div style="min-height:100vh;background:rgba(202,202,221,.1);">
+    <div class="dash-header">
+      <div class="dash-header-inner">
+        <div style="display:flex;align-items:center;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;background:var(--cyan);border-radius:50%;"></div>
+            <span style="font-size:18px;font-weight:900;color:var(--navy);text-transform:lowercase;">zero one hundred</span>
+          </div>
+          <div class="divider-v"></div>
+          <div>
+            <div class="dash-title">Moje tickety</div>
+            <div class="dash-sub" id="cust-dash-name"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-secondary btn-sm" onclick="loadCustDash()">🔄 Obnoviť</button>
+          <button class="btn btn-ghost btn-sm" onclick="doLogout('customer')">Odhlásiť sa</button>
+        </div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="grid grid-3 gap-6 mb-8">
+        <div class="stat-card"><div class="stat-label">Celkový počet</div><div class="stat-num" id="cust-stat-total">0</div></div>
+        <div class="stat-card"><div class="stat-label">V progrese</div><div class="stat-num" id="cust-stat-progress">0</div></div>
+        <div class="stat-card"><div class="stat-label">Vyriešené</div><div class="stat-num" id="cust-stat-done">0</div></div>
+      </div>
+      <div id="cust-error" class="alert alert-error hidden mb-6"></div>
+      <h2 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:16px;">Moje tickety</h2>
+      <div id="cust-tickets-loading" class="text-center py-12 hidden">
+        <div class="spin spin-lg" style="margin:0 auto 16px;"></div>
+        <p style="color:var(--purple);">Načítavam tickety...</p>
+      </div>
+      <div id="cust-tickets-empty" class="card text-center py-12 hidden">
+        <div style="font-size:48px;margin-bottom:16px;">📭</div>
+        <p style="color:var(--purple);font-size:16px;">Nemáte žiadne tickety</p>
+      </div>
+      <div class="grid grid-lg-3 gap-6" id="cust-tickets-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: DASHBOARD (Requests overview)                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-dashboard" class="page">
+  <div style="min-height:100vh;background:#f9fafb;">
+    <div class="dash-header">
+      <div class="dash-header-inner">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="btn btn-ghost btn-sm" onclick="showPage('home')">← Späť</button>
+          <h1 style="font-size:20px;font-weight:900;color:var(--navy);">Dashboard — Prehľad žiadostí</h1>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="showPage('admin')">Admin Panel</button>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="grid grid-4 gap-6 mb-8">
+        <div class="stat-card" style="display:flex;align-items:center;justify-content:space-between;">
+          <div><div class="stat-label">Celkom žiadostí</div><div class="stat-num" id="dash-stat-total">0</div></div>
+          <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8;">📊</div>
+        </div>
+        <div class="stat-card" style="display:flex;align-items:center;justify-content:space-between;">
+          <div><div class="stat-label">Čakajúce</div><div class="stat-num" id="dash-stat-pending">0</div></div>
+          <div class="stat-icon" style="background:#fef9c3;color:#854d0e;">⏳</div>
+        </div>
+        <div class="stat-card" style="display:flex;align-items:center;justify-content:space-between;">
+          <div><div class="stat-label">V procese</div><div class="stat-num" id="dash-stat-progress">0</div></div>
+          <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8;">📈</div>
+        </div>
+        <div class="stat-card" style="display:flex;align-items:center;justify-content:space-between;">
+          <div><div class="stat-label">Vyriešené</div><div class="stat-num" id="dash-stat-done">0</div></div>
+          <div class="stat-icon" style="background:#dcfce7;color:#15803d;">✅</div>
+        </div>
+      </div>
+      <div class="card mb-6">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+          <div style="position:relative;"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;">🔍</span><input id="dash-search" type="text" placeholder="Hľadať..." style="padding-left:38px;" oninput="filterDashRequests()" /></div>
+          <select id="dash-status-filter" onchange="filterDashRequests()">
+            <option value="all">Všetky stavy</option>
+            <option value="pending">Čakajúce</option>
+            <option value="in_progress">V procese</option>
+            <option value="resolved">Vyriešené</option>
+          </select>
+          <select id="dash-priority-filter" onchange="filterDashRequests()">
+            <option value="all">Všetky priority</option>
+            <option value="high">Vysoká</option>
+            <option value="medium">Stredná</option>
+            <option value="low">Nízka</option>
+          </select>
+        </div>
+      </div>
+      <div id="dash-requests-list" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="card text-center py-12" style="color:var(--purple);">Načítavam žiadosti...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: ADMIN                                                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-admin" class="page">
+  <div style="min-height:100vh;background:#f9fafb;">
+    <div class="dash-header">
+      <div class="dash-header-inner">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="btn btn-ghost btn-sm" onclick="showPage('dashboard')">← Dashboard</button>
+          <h1 style="font-size:20px;font-weight:900;color:var(--navy);">Admin Panel</h1>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('add-team-modal')">➕ Pridať člena tímu</button>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('admin','requests')">Správa žiadostí</button>
+        <button class="tab-btn" onclick="switchTab('admin','team')">Tím</button>
+        <button class="tab-btn" onclick="switchTab('admin','matchmaking')">Matchmaking</button>
+      </div>
+      <div id="admin-tab-requests" class="tab-content active">
+        <div class="kanban" id="admin-kanban">
+          <div class="kanban-col">
+            <div class="kanban-col-header" style="background:#fef9c3;"><div class="kanban-dot" style="background:#ca8a04;"></div>Čakajúce (<span id="k-pending-count">0</span>)</div>
+            <div class="kanban-col-body" id="k-pending"></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header" style="background:#dbeafe;"><div class="kanban-dot" style="background:#2563eb;"></div>V procese (<span id="k-progress-count">0</span>)</div>
+            <div class="kanban-col-body" id="k-progress"></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header" style="background:#dcfce7;"><div class="kanban-dot" style="background:#16a34a;"></div>Vyriešené (<span id="k-done-count">0</span>)</div>
+            <div class="kanban-col-body" id="k-done"></div>
+          </div>
+        </div>
+      </div>
+      <div id="admin-tab-team" class="tab-content">
+        <div class="grid grid-lg-3 gap-6" id="admin-team-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--purple);">Načítavam tím...</div>
+        </div>
+      </div>
+      <div id="admin-tab-matchmaking" class="tab-content">
+        <div class="card">
+          <h3 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:8px;">AI Matchmaking</h3>
+          <p style="color:var(--purple);font-size:14px;margin-bottom:16px;">Systém automaticky navrhuje najvhodnejších členov tímu pre každú žiadosť na základe typu žiadosti a popisu.</p>
+          <div id="admin-matchmaking-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: CREATE TICKET                                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-create-ticket" class="page">
+  <div style="min-height:100vh;background:rgba(202,202,221,.1);">
+    <div class="dash-header">
+      <div class="dash-header-inner">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="btn btn-ghost btn-sm" onclick="showPage('home')">← Späť</button>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;background:var(--cyan);border-radius:50%;"></div>
+            <div><div class="dash-title">Vytvoriť nový ticket</div><div class="dash-sub">Priraďte ticket zamestnancovi</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:720px;margin:0 auto;padding:32px 24px;">
+      <div class="card shadow-lg">
+        <form onsubmit="submitCreateTicket(event)" class="space-y-6">
+          <div><label>Meno klienta *</label><input type="text" id="ct-meno" placeholder="Zadajte meno klienta" required /></div>
+          <div><label>Email klienta *</label><input type="email" id="ct-email" placeholder="klient@example.com" required /></div>
+          <div><label>Popis problému *</label><textarea id="ct-opis" rows="6" placeholder="Popíšte problém detailne..." required></textarea></div>
+          <div>
+            <label>Priradiť zamestnancovi *</label>
+            <input type="text" id="ct-zakaznik" placeholder="Zadajte meno zamestnanca (napr: Ján Novák)" required />
+            <p style="font-size:12px;color:var(--purple);margin-top:5px;">Tip: Zadajte presné meno zamestnanca, ktorý sa má starať o tento ticket</p>
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="ct-status">
+              <option value="novy">Nový</option>
+              <option value="v_progrese">V progrese</option>
+              <option value="vyrieseny">Vyriešený</option>
+            </select>
+          </div>
+          <div id="ct-error" class="alert alert-error hidden"></div>
+          <div id="ct-success" class="alert alert-success hidden">✓ Ticket bol úspešne vytvorený!</div>
+          <div style="display:flex;gap:12px;padding-top:16px;">
+            <button type="submit" class="btn btn-primary" style="flex:1;font-size:15px;padding:14px;" id="ct-btn">📤 Vytvoriť ticket</button>
+            <button type="button" class="btn btn-secondary" onclick="showPage('home')">Zrušiť</button>
+          </div>
+        </form>
+      </div>
+      <div class="alert alert-info mt-6">
+        <strong>Ako to funguje?</strong><br>
+        • Ticket bude automaticky priradený zamestnancovi podľa mena<br>
+        • Zamestnanec uvidí ticket vo svojom dashboarde po prihlásení<br>
+        • Zamestnanec môže meniť status ticketu (nový → v progrese → vyriešený)
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: DEMO DATA                                              -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-demo-data" class="page">
+  <div class="setup-bg">
+    <div style="max-width:896px;margin:0 auto;">
+      <button class="btn btn-ghost mb-8" style="color:#fff;" onclick="showPage('home')">← Späť na hlavnú stránku</button>
+      <div class="card shadow-2xl">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+          <div style="width:56px;height:56px;background:var(--cyan);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;">🗄️</div>
+          <div><h1 style="font-size:28px;font-weight:900;color:var(--navy);">Demo Data Generator</h1><p style="color:var(--purple);">Vytvorte testovacie tickety pre testovanie systému</p></div>
+        </div>
+        <div style="background:rgba(17,237,226,.1);border-radius:14px;padding:24px;margin-bottom:24px;">
+          <h2 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:16px;">Demo zamestnanci</h2>
+          <div class="grid grid-3 gap-4">
+            <div class="card" style="padding:16px;"><div style="font-weight:900;color:var(--navy);">Ján Horák</div><div style="font-size:13px;color:var(--purple);">2 tickety</div></div>
+            <div class="card" style="padding:16px;"><div style="font-weight:900;color:var(--navy);">Mária Vargová</div><div style="font-size:13px;color:var(--purple);">2 tickety</div></div>
+            <div class="card" style="padding:16px;"><div style="font-weight:900;color:var(--navy);">Peter Molnár</div><div style="font-size:13px;color:var(--purple);">1 ticket</div></div>
+          </div>
+        </div>
+        <h2 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:12px;">Tickety na vytvorenie</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;max-height:380px;overflow-y:auto;margin-bottom:24px;">
+          <div class="demo-ticket-preview"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><strong style="color:var(--navy);">Peter Novák</strong><span class="badge badge-cyan">Ján Horák</span></div><div style="font-size:13px;color:var(--purple);">peter.novak@example.com</div><div style="font-size:13px;color:var(--navy);margin-top:4px;">Potrebujem pomoc s nastavením nového účtu v systéme. Nemôžem sa prihlásiť.</div></div>
+          <div class="demo-ticket-preview"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><strong style="color:var(--navy);">Eva Kováčová</strong><span class="badge badge-cyan">Ján Horák</span></div><div style="font-size:13px;color:var(--purple);">eva.kovacova@example.com</div><div style="font-size:13px;color:var(--navy);margin-top:4px;">Mám problém s fakturáciou. Faktúra sa nezobrazuje správne.</div></div>
+          <div class="demo-ticket-preview"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><strong style="color:var(--navy);">Martin Szabó</strong><span class="badge badge-cyan">Mária Vargová</span></div><div style="font-size:13px;color:var(--purple);">martin.szabo@example.com</div><div style="font-size:13px;color:var(--navy);margin-top:4px;">Chcel by som pridať nového používateľa do tímu, ale neviem ako na to.</div></div>
+          <div class="demo-ticket-preview"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><strong style="color:var(--navy);">Lucia Tóthová</strong><span class="badge badge-cyan">Mária Vargová</span></div><div style="font-size:13px;color:var(--purple);">lucia.tothova@example.com</div><div style="font-size:13px;color:var(--navy);margin-top:4px;">Exportovanie dát nefunguje. Keď kliknem na tlačidlo Export, nič sa nestane.</div></div>
+          <div class="demo-ticket-preview"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><strong style="color:var(--navy);">Tomáš Balog</strong><span class="badge badge-cyan">Peter Molnár</span></div><div style="font-size:13px;color:var(--purple);">tomas.balog@example.com</div><div style="font-size:13px;color:var(--navy);margin-top:4px;">Potrebujem zmeniť email adresu v profile, ale systém mi to nedovolí.</div></div>
+        </div>
+        <div id="demo-status" class="hidden alert mb-6"></div>
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-primary" style="flex:1;font-size:15px;padding:14px;" onclick="createDemoTickets()" id="demo-btn">🗄️ Vytvoriť demo tickety</button>
+          <button class="btn btn-secondary" onclick="showPage('login')">Prihlásiť sa</button>
+        </div>
+        <div class="alert alert-info mt-6">
+          <strong>Ako používať:</strong><br>
+          1. Kliknite na "Vytvoriť demo tickety"<br>
+          2. Počkajte, kým sa vytvoria všetky tickety<br>
+          3. Prihláste sa ako jeden z demo zamestnancov (napr. "Ján Horák")<br>
+          4. Uvidíte svoje pridelené tickety v dashboarde
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: SETUP GUIDE                                            -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-setup" class="page">
+  <div class="setup-bg">
+    <div style="max-width:1024px;margin:0 auto;padding:48px 0;">
+      <div style="text-align:center;margin-bottom:48px;">
+        <div style="display:inline-flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <div style="width:64px;height:64px;background:var(--cyan);border-radius:50%;"></div>
+          <span style="font-size:36px;font-weight:900;color:#fff;text-transform:lowercase;">zero one hundred</span>
+        </div>
+        <h1 style="font-size:36px;font-weight:900;color:#fff;margin-bottom:8px;">Employee Ticket System</h1>
+        <p style="font-size:18px;color:var(--silver);">Systém pre správu ticketov a zamestnancov</p>
+      </div>
+      <div class="card shadow-2xl mb-8">
+        <h2 style="font-size:24px;font-weight:900;color:var(--navy);margin-bottom:24px;">🚀 Rýchly štart v 3 krokoch</h2>
+        <div class="space-y-6">
+          <div class="step-card" style="background:rgba(17,237,226,.05);border-color:var(--cyan);">
+            <div class="step-num" style="background:var(--cyan);color:var(--navy);">1</div>
+            <div>
+              <h3 style="font-size:17px;font-weight:900;color:var(--navy);margin-bottom:8px;">🗄️ Skontrolujte štruktúru databázy</h3>
+              <p style="color:var(--purple);font-size:14px;margin-bottom:12px;">Otvorte DB Diagnostiku pre zobrazenie reálnych stĺpcov tabuliek <code style="background:rgba(202,202,221,.3);padding:2px 8px;border-radius:4px;">employees</code> a <code style="background:rgba(202,202,221,.3);padding:2px 8px;border-radius:4px;">tickets</code></p>
+              <button class="btn btn-secondary btn-sm" onclick="showPage('db-setup')">📊 Otvoriť DB Diagnostiku</button>
+            </div>
+          </div>
+          <div class="step-card" style="background:#eff6ff;border-color:#93c5fd;">
+            <div class="step-num" style="background:#2563eb;color:#fff;">2</div>
+            <div>
+              <h3 style="font-size:17px;font-weight:900;color:var(--navy);margin-bottom:8px;">➕ Vytvorte demo dáta</h3>
+              <p style="color:var(--purple);font-size:14px;margin-bottom:12px;">Vytvorte 5 testovacích ticketov pre 3 demo zamestnancov (Ján Horák, Mária Vargová, Peter Molnár)</p>
+              <button class="btn btn-sm" style="background:#2563eb;color:#fff;" onclick="showPage('demo-data')">🗄️ Vytvoriť demo dáta</button>
+            </div>
+          </div>
+          <div class="step-card" style="background:#f0fdf4;border-color:#86efac;">
+            <div class="step-num" style="background:#16a34a;color:#fff;">3</div>
+            <div>
+              <h3 style="font-size:17px;font-weight:900;color:var(--navy);margin-bottom:8px;">🔑 Prihláste sa ako zamestnanec</h3>
+              <p style="color:var(--purple);font-size:14px;margin-bottom:12px;">Zadajte meno zamestnanca (napr. "Ján Horák") a uvidíte svoje pridelené tickety</p>
+              <button class="btn btn-sm" style="background:#16a34a;color:#fff;" onclick="showPage('login')">🔑 Prihlásiť sa</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-lg-2 gap-6 mb-8">
+        <div class="card shadow-lg">
+          <h3 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:16px;">Hlavné funkcie</h3>
+          <div class="space-y-3">
+            <div style="display:flex;align-items:start;gap:10px;"><span style="color:var(--cyan);font-size:20px;flex-shrink:0;">✅</span><span style="color:var(--purple);font-size:14px;">Login podľa mena zamestnanca</span></div>
+            <div style="display:flex;align-items:start;gap:10px;"><span style="color:var(--cyan);font-size:20px;flex-shrink:0;">✅</span><span style="color:var(--purple);font-size:14px;">Automatické načítanie ticketov z databázy</span></div>
+            <div style="display:flex;align-items:start;gap:10px;"><span style="color:var(--cyan);font-size:20px;flex-shrink:0;">✅</span><span style="color:var(--purple);font-size:14px;">Zmena statusu ticketov (nový → v progrese → vyriešený)</span></div>
+            <div style="display:flex;align-items:start;gap:10px;"><span style="color:var(--cyan);font-size:20px;flex-shrink:0;">✅</span><span style="color:var(--purple);font-size:14px;">Štatistiky a prehľadný dashboard</span></div>
+            <div style="display:flex;align-items:start;gap:10px;"><span style="color:var(--cyan);font-size:20px;flex-shrink:0;">✅</span><span style="color:var(--purple);font-size:14px;">Flexibilná detekcia stĺpcov DB</span></div>
+          </div>
+        </div>
+        <div class="card shadow-lg">
+          <h3 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:16px;">Užitočné odkazy</h3>
+          <div class="space-y-3">
+            <button class="btn btn-secondary w-full" style="justify-content:flex-start;" onclick="showPage('create-ticket')">➕ Vytvoriť nový ticket</button>
+            <button class="btn btn-secondary w-full" style="justify-content:flex-start;" onclick="showPage('login')">🔑 Prihlásenie zamestnanca</button>
+            <button class="btn btn-secondary w-full" style="justify-content:flex-start;" onclick="showPage('demo-data')">🗄️ Demo dáta</button>
+            <button class="btn btn-secondary w-full" style="justify-content:flex-start;" onclick="showPage('db-setup')">📊 DB Diagnostika</button>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:32px;">
+        <button class="btn btn-ghost" style="color:#fff;" onclick="showPage('home')">← Späť na hlavnú stránku</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PAGE: DB SETUP / DIAGNOSTICS                                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="page-db-setup" class="page">
+  <div class="setup-bg">
+    <div style="max-width:1024px;margin:0 auto;">
+      <button class="btn btn-ghost mb-6" style="color:#fff;" onclick="showPage('home')">← Späť</button>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+        <div style="width:56px;height:56px;background:var(--cyan);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;">🗄️</div>
+        <div><h1 style="font-size:28px;font-weight:900;color:#fff;">Databázová diagnostika & Setup</h1><p style="color:var(--silver);">Zobrazenie reálnej štruktúry tabuliek a nastavenie zamestnanca</p></div>
+      </div>
+
+      <!-- Schema Inspector -->
+      <div class="card shadow-2xl mb-6">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+          <h2 style="font-size:18px;font-weight:900;color:var(--navy);">📊 Štruktúra databázových tabuliek</h2>
+          <button class="btn btn-secondary btn-sm" onclick="loadDbSchemas()">🔄 Obnoviť schému</button>
+        </div>
+        <div id="db-schema-error" class="alert alert-error hidden mb-4"></div>
+        <div id="db-schema-loading" class="text-center py-8">
+          <div class="spin spin-lg" style="margin:0 auto 12px;"></div>
+          <p style="color:var(--purple);">Načítavam schému databázy...</p>
+        </div>
+        <div id="db-schema-content" class="hidden">
+          <div class="grid grid-lg-2 gap-6">
+            <div style="border:1px solid var(--silver);border-radius:14px;overflow:hidden;">
+              <div style="background:var(--navy);padding:12px 16px;display:flex;align-items:center;gap:8px;">
+                <span style="color:var(--cyan);font-size:18px;">👤</span>
+                <span style="color:#fff;font-weight:900;">Tabuľka: employees</span>
+                <span id="emp-col-count" style="margin-left:auto;color:var(--cyan);font-size:13px;"></span>
+              </div>
+              <div style="padding:16px;">
+                <div id="emp-col-badges" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;"></div>
+                <div id="emp-sample-rows"></div>
+              </div>
+            </div>
+            <div style="border:1px solid var(--silver);border-radius:14px;overflow:hidden;">
+              <div style="background:var(--navy);padding:12px 16px;display:flex;align-items:center;gap:8px;">
+                <span style="color:var(--cyan);font-size:18px;">🎫</span>
+                <span style="color:#fff;font-weight:900;">Tabuľka: tickets</span>
+                <span id="tick-col-count" style="margin-left:auto;color:var(--cyan);font-size:13px;"></span>
+              </div>
+              <div style="padding:16px;">
+                <div id="tick-col-badges" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;"></div>
+                <div id="tick-sample-rows"></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:16px;font-size:12px;">
+            <div style="display:flex;align-items:center;gap:8px;"><span class="col-badge col-badge-emp">stĺpec</span><span style="color:var(--purple);">= meno zamestnanca</span></div>
+            <div style="display:flex;align-items:center;gap:8px;"><span class="col-badge col-badge-cust">stĺpec</span><span style="color:var(--purple);">= meno zákazníka</span></div>
+            <div style="display:flex;align-items:center;gap:8px;"><span class="col-badge col-badge-assign">stĺpec</span><span style="color:var(--purple);">= priradenie zamestnanca</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Employee + Assign Tickets -->
+      <div class="card shadow-2xl mb-6">
+        <h2 style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:8px;">👤 Vytvoriť zamestnanca & priradiť tickety</h2>
+        <p style="color:var(--purple);font-size:14px;margin-bottom:20px;">Systém automaticky detekuje správne stĺpce, vytvorí zamestnanca a priradí mu tickety <strong>01010102</strong> a <strong>02110403</strong>.</p>
+        <div class="grid grid-lg-2 gap-6 mb-6">
+          <div><label>Meno zamestnanca *</label><input type="text" id="db-emp-name" value="Testovací Zamestnanec" /></div>
+          <div>
+            <label>Čísla ticketov (fixné)</label>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <span class="col-badge col-badge-emp" style="font-size:13px;padding:8px 14px;">01010102</span>
+              <span class="col-badge col-badge-emp" style="font-size:13px;padding:8px 14px;">02110403</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="padding:12px 28px;" onclick="runDbSetup()" id="db-setup-btn">👤 Vytvoriť zamestnanca & priradiť tickety</button>
+        <div id="db-setup-result" class="hidden mt-6"></div>
+      </div>
+
+      <!-- Next steps -->
+      <div style="background:rgba(255,255,255,.1);border-radius:20px;padding:24px;">
+        <h3 style="color:#fff;font-weight:900;font-size:17px;margin-bottom:16px;">Po dokončení setupu:</h3>
+        <div class="grid grid-3 gap-4">
+          <button class="btn btn-primary" onclick="showPage('login')">🔑 Prihlásiť sa ako zamestnanec →</button>
+          <button class="btn" style="background:rgba(255,255,255,.2);color:#fff;" onclick="showPage('login')">👥 Prihlásiť sa ako zákazník →</button>
+          <button class="btn" style="background:rgba(255,255,255,.2);color:#fff;" onclick="loadDbSchemas()">↺ Obnoviť schému</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODAL: REQUEST FORM                                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="request-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('request-modal')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 style="font-size:20px;font-weight:900;color:var(--navy);">Odoslať žiadosť</h2>
+      <button class="modal-close" onclick="closeModal('request-modal')">✕</button>
+    </div>
+    <form onsubmit="submitRequest(event)" class="space-y-4">
+      <div><label>Meno a priezvisko *</label><input type="text" id="req-name" required /></div>
+      <div><label>Email *</label><input type="email" id="req-email" required /></div>
+      <div><label>Spoločnosť / Organizácia</label><input type="text" id="req-company" /></div>
+      <div>
+        <label>Typ používateľa *</label>
+        <select id="req-user-type" required>
+          <option value="">Vyberte typ</option>
+          <option value="startup">Startup</option>
+          <option value="investor">Investor</option>
+          <option value="service_provider">Service Provider</option>
+          <option value="community_member">Člen komunity</option>
+        </select>
+      </div>
+      <div>
+        <label>Typ žiadosti *</label>
+        <select id="req-type" required>
+          <option value="">Vyberte typ žiadosti</option>
+          <option value="finding_investor">Hľadanie investora</option>
+          <option value="finding_employee">Hľadanie zamestnanca</option>
+          <option value="speaking_event">Speaking príležitosť</option>
+          <option value="marketing_support">Marketingová podpora</option>
+          <option value="sales_support">Sales podpora</option>
+          <option value="finding_clients">Hľadanie klientov</option>
+          <option value="other">Iné</option>
+        </select>
+      </div>
+      <div><label>Popis problému / potreby *</label><textarea id="req-description" rows="4" placeholder="Popíšte detailne vašu požiadavku..." required></textarea></div>
+      <div id="req-error" class="alert alert-error hidden"></div>
+      <button type="submit" class="btn btn-primary w-full" style="font-size:15px;padding:14px;" id="req-btn">Odoslať žiadosť</button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODAL: ADD TEAM MEMBER                                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="add-team-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('add-team-modal')">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <h2 style="font-size:20px;font-weight:900;color:var(--navy);">Nový člen tímu</h2>
+      <button class="modal-close" onclick="closeModal('add-team-modal')">✕</button>
+    </div>
+    <form onsubmit="submitTeamMember(event)" class="space-y-4">
+      <div><label>Meno *</label><input type="text" id="tm-name" required /></div>
+      <div><label>Rola *</label><input type="text" id="tm-role" required /></div>
+      <div><label>Email *</label><input type="email" id="tm-email" required /></div>
+      <div><label>Expertíza (oddelené čiarkami)</label><input type="text" id="tm-expertise" placeholder="napr. investment, marketing, sales" /></div>
+      <button type="submit" class="btn btn-primary w-full" style="font-size:15px;padding:14px;">Pridať člena tímu</button>
+    </form>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT                                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────
+const PROJECT_ID = 'psznbzvnwtpcpiwvgpbp';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBzem5ienZud3RwY3Bpd3ZncGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2Njk5MDAsImV4cCI6MjA5MDI0NTkwMH0.18Sqvy5oUj_e0QpGJdm9xKEZeZ4swlIwYfEmH8xPUAE';
+const API = `https://${PROJECT_ID}.supabase.co/functions/v1/make-server-87f31c81`;
+const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ANON_KEY}` };
+const GET_headers = { 'Authorization': `Bearer ${ANON_KEY}` };
+
+// ─── Page state ───────────────────────────────────────────────
+let currentPage = 'home';
+let loginRole = 'employee';
+let allDashRequests = [];
+let allAdminRequests = [];
+let allTeamMembers = [];
+
+// ─── Navigation ───────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (!page) return;
+  page.classList.add('active');
+  currentPage = id;
+  window.scrollTo(0, 0);
+
+  // Toggle nav visibility
+  const hideNav = ['login','employee-dash','customer-dash'];
+  document.getElementById('main-nav').style.display = hideNav.includes(id) ? 'none' : '';
+
+  // Load data for pages
+  if (id === 'dashboard') loadDashRequests();
+  if (id === 'admin') { loadAdminRequests(); loadTeamMembers(); }
+  if (id === 'db-setup') loadDbSchemas();
+  if (id === 'employee-dash') loadEmpDash();
+  if (id === 'customer-dash') loadCustDash();
+}
+
+// ─── Toast ────────────────────────────────────────────────────
+function showToast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = (type==='success'?'✓ ':type==='error'?'✗ ':'ℹ ') + msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ─── Modal ────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+// ─── Tabs ─────────────────────────────────────────────────────
+function switchTab(prefix, tab) {
+  document.querySelectorAll(`[id^="${prefix}-tab-"]`).forEach(t => t.classList.remove('active'));
+  document.querySelectorAll(`#page-${prefix} .tab-btn`).forEach(b => b.classList.remove('active'));
+  document.getElementById(`${prefix}-tab-${tab}`).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ─── Chatbot ──────────────────────────────────────────────────
+function toggleChatbot() {
+  const bot = document.getElementById('chatbot-container');
+  const placeholder = document.getElementById('chatbot-placeholder');
+  bot.classList.toggle('hidden');
+  placeholder.classList.toggle('hidden');
+}
+
+function sendQuickMsg(msg) {
+  document.getElementById('chatbot-input').value = msg;
+  sendChatMessage();
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatbot-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  const msgs = document.getElementById('chatbot-messages');
+  const userEl = document.createElement('div');
+  userEl.className = 'chatbot-msg user';
+  userEl.textContent = msg;
+  msgs.appendChild(userEl);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'chatbot-msg bot';
+  loadingEl.innerHTML = '<span class="spin"></span>';
+  msgs.appendChild(loadingEl);
+
+  try {
+    const res = await fetch(`${API}/chatbot`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ message: msg })
+    });
+    const data = await res.json();
+    loadingEl.textContent = data.response?.message || 'Ďakujem za správu.';
+  } catch {
+    loadingEl.textContent = 'Chyba pri komunikácii so serverom.';
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ─── Login ────────────────────────────────────────────────────
+function setRole(role) {
+  loginRole = role;
+  document.getElementById('role-emp').classList.toggle('active', role==='employee');
+  document.getElementById('role-cust').classList.toggle('active', role==='customer');
+  document.getElementById('login-label').textContent = role==='employee' ? 'Meno zamestnanca' : 'Meno zákazníka';
+  document.getElementById('login-input').placeholder = role==='employee' ? 'Zadajte meno zamestnanca' : 'Zadajte meno zákazníka';
+  document.getElementById('login-hint').textContent = role==='employee'
+    ? 'Zadajte svoje meno pre prihlásenie ako zamestnanec'
+    : 'Zadajte svoje meno pre prihlásenie ako zákazník';
+  document.getElementById('login-error').classList.add('hidden');
+}
+
+async function doLogin() {
+  const name = document.getElementById('login-input').value.trim();
+  if (!name) return;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  btn.disabled = true;
+  btn.textContent = 'Prihlasovanie...';
+  errEl.classList.add('hidden');
+
+  try {
+    const endpoint = loginRole === 'employee' ? 'employee/login' : 'customer/login';
+    const res = await fetch(`${API}/${endpoint}`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Nepodarilo sa prihlásiť');
+
+    if (loginRole === 'employee') {
+      localStorage.setItem('employeeName', data.employee.name);
+      localStorage.setItem('employeeNormalizedName', data.employee.normalizedName);
+      localStorage.setItem('userRole', 'employee');
+      showPage('employee-dash');
+    } else {
+      localStorage.setItem('customerName', data.customer.name);
+      localStorage.setItem('customerEmail', data.customer.email || '');
+      localStorage.setItem('userRole', 'customer');
+      showPage('customer-dash');
+    }
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔑 Prihlásiť sa';
+  }
+}
+
+// Enter key for login
+document.getElementById('login-input').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+
+function doLogout(role) {
+  if (role === 'employee') {
+    localStorage.removeItem('employeeName');
+    localStorage.removeItem('employeeNormalizedName');
+  } else {
+    localStorage.removeItem('customerName');
+    localStorage.removeItem('customerEmail');
+  }
+  localStorage.removeItem('userRole');
+  showPage('login');
+}
+
+// ─── Helpers ──────────────────────────────────────────────────
+function statusBadge(status) {
+  const map = {
+    novy: ['badge-orange','Nový'],
+    v_progrese: ['badge-blue','V progrese'],
+    prebiehajúci: ['badge-blue','Prebiehajúci'],
+    vyrieseny: ['badge-green','Vyriešený'],
+    dokončený: ['badge-green','Dokončený'],
+    pending: ['badge-yellow','Čakajúce'],
+    in_progress: ['badge-blue','V procese'],
+    resolved: ['badge-green','Vyriešené'],
+  };
+  const [cls, label] = map[status] || ['badge-gray', status];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function priorityBadge(p) {
+  const map = { high:['badge-red','Vysoká'], medium:['badge-yellow','Stredná'], low:['badge-green','Nízka'] };
+  const [cls, label] = map[p] || ['badge-gray', p];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function ticketCard(t, buttons='') {
+  const cName = t.meno || t.name || t.customer_name || t.client_name || '—';
+  const email = t.email || t.mail || '—';
+  const desc = t.opis_problemu || t.description || t.message || '—';
+  const assigned = t.zakaznik || t.zamestnanec || t.employee || t.assigned_to || '—';
+  const created = t.created_at ? new Date(t.created_at).toLocaleDateString('sk-SK',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+  return `<div class="ticket-card">
+    <div style="margin-bottom:16px;">${statusBadge(t.status)}</div>
+    <div class="space-y-3 mb-4">
+      <div style="display:flex;gap:8px;align-items:start;"><span style="font-size:16px;flex-shrink:0;margin-top:2px;">👤</span><div><div style="font-size:11px;font-weight:700;color:var(--purple);">Meno klienta</div><div style="font-size:14px;font-weight:700;color:var(--navy);">${cName}</div></div></div>
+      <div style="display:flex;gap:8px;align-items:start;"><span style="font-size:16px;flex-shrink:0;margin-top:2px;">📧</span><div><div style="font-size:11px;font-weight:700;color:var(--purple);">Email</div><div style="font-size:14px;color:var(--navy);word-break:break-all;">${email}</div></div></div>
+      <div style="display:flex;gap:8px;align-items:start;"><span style="font-size:16px;flex-shrink:0;margin-top:2px;">🔗</span><div><div style="font-size:11px;font-weight:700;color:var(--purple);">Priradený</div><div style="font-size:14px;color:var(--navy);">${assigned}</div></div></div>
+    </div>
+    <div style="margin-bottom:16px;"><div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:4px;">Popis problému</div><div style="font-size:13px;color:var(--navy);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${desc}</div></div>
+    <div style="font-size:11px;color:var(--purple);margin-bottom:${buttons?'16px':'0'};">Vytvorené: ${created}</div>
+    ${buttons ? `<div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--silver);">${buttons}</div>` : ''}
+  </div>`;
+}
+
+// ─── Employee Dashboard ───────────────────────────────────────
+async function loadEmpDash() {
+  const empName = localStorage.getItem('employeeName');
+  const normalizedName = localStorage.getItem('employeeNormalizedName');
+  if (!empName || !normalizedName) { showPage('login'); return; }
+
+  document.getElementById('emp-dash-name').textContent = empName;
+  document.getElementById('emp-tickets-loading').classList.remove('hidden');
+  document.getElementById('emp-tickets-grid').innerHTML = '';
+  document.getElementById('emp-tickets-empty').classList.add('hidden');
+  document.getElementById('emp-error').classList.add('hidden');
+
+  try {
+    const res = await fetch(`${API}/employee/${encodeURIComponent(normalizedName)}/tickets`, { headers: GET_headers });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Chyba pri načítaní');
+    renderEmpTickets(data.tickets || []);
+  } catch (err) {
+    document.getElementById('emp-error').textContent = err.message;
+    document.getElementById('emp-error').classList.remove('hidden');
+  } finally {
+    document.getElementById('emp-tickets-loading').classList.add('hidden');
+  }
+}
+
+function renderEmpTickets(tickets) {
+  document.getElementById('emp-stat-total').textContent = tickets.length;
+  document.getElementById('emp-stat-progress').textContent = tickets.filter(t=>['v_progrese','prebiehajúci'].includes(t.status)).length;
+  document.getElementById('emp-stat-done').textContent = tickets.filter(t=>['vyrieseny','dokončený'].includes(t.status)).length;
+
+  const grid = document.getElementById('emp-tickets-grid');
+  if (tickets.length === 0) {
+    document.getElementById('emp-tickets-empty').classList.remove('hidden');
+    return;
+  }
+  grid.innerHTML = tickets.map(t => {
+    let btns = '';
+    if (t.status === 'novy') btns = `<button class="btn btn-sm" style="flex:1;background:#2563eb;color:#fff;font-size:12px;" onclick="updateTicket('${t.id}','v_progrese','emp')">Začať riešiť</button>`;
+    else if (['v_progrese','prebiehajúci'].includes(t.status)) btns = `<button class="btn btn-sm" style="flex:1;background:#16a34a;color:#fff;font-size:12px;" onclick="updateTicket('${t.id}','vyrieseny','emp')">Označiť ako vyriešený</button>`;
+    else btns = `<button class="btn btn-secondary btn-sm" style="flex:1;font-size:12px;" onclick="updateTicket('${t.id}','v_progrese','emp')">Znovu otvoriť</button>`;
+    return ticketCard(t, btns);
+  }).join('');
+}
+
+async function updateTicket(id, status, who) {
+  try {
+    await fetch(`${API}/tickets/${id}`, {
+      method: 'PUT', headers,
+      body: JSON.stringify({ status })
+    });
+    showToast('Ticket aktualizovaný', 'success');
+    if (who==='emp') loadEmpDash();
+    else loadCustDash();
+  } catch { showToast('Chyba pri aktualizácii', 'error'); }
+}
+
+// ─── Customer Dashboard ───────────────────────────────────────
+async function loadCustDash() {
+  const custName = localStorage.getItem('customerName');
+  if (!custName) { showPage('login'); return; }
+
+  document.getElementById('cust-dash-name').textContent = custName;
+  document.getElementById('cust-tickets-loading').classList.remove('hidden');
+  document.getElementById('cust-tickets-grid').innerHTML = '';
+  document.getElementById('cust-tickets-empty').classList.add('hidden');
+  document.getElementById('cust-error').classList.add('hidden');
+
+  try {
+    const res = await fetch(`${API}/customer/${encodeURIComponent(custName)}/tickets`, { headers: GET_headers });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Chyba pri načítaní');
+    const tickets = data.tickets || [];
+    document.getElementById('cust-stat-total').textContent = tickets.length;
+    document.getElementById('cust-stat-progress').textContent = tickets.filter(t=>['v_progrese','prebiehajúci'].includes(t.status)).length;
+    document.getElementById('cust-stat-done').textContent = tickets.filter(t=>['vyrieseny','dokončený'].includes(t.status)).length;
+    if (tickets.length === 0) {
+      document.getElementById('cust-tickets-empty').classList.remove('hidden');
+    } else {
+      document.getElementById('cust-tickets-grid').innerHTML = tickets.map(t => ticketCard(t)).join('');
+    }
+  } catch (err) {
+    document.getElementById('cust-error').textContent = err.message;
+    document.getElementById('cust-error').classList.remove('hidden');
+  } finally {
+    document.getElementById('cust-tickets-loading').classList.add('hidden');
+  }
+}
+
+// ─── Dashboard Requests ───────────────────────────────────────
+async function loadDashRequests() {
+  document.getElementById('dash-requests-list').innerHTML = '<div class="card text-center py-12" style="color:var(--purple);">Načítavam žiadosti...</div>';
+  try {
+    const res = await fetch(`${API}/requests`, { headers: GET_headers });
+    const data = await res.json();
+    allDashRequests = data.requests || [];
+    updateDashStats();
+    filterDashRequests();
+  } catch {
+    document.getElementById('dash-requests-list').innerHTML = '<div class="alert alert-error">Chyba pri načítaní žiadostí</div>';
+  }
+}
+
+function updateDashStats() {
+  document.getElementById('dash-stat-total').textContent = allDashRequests.length;
+  document.getElementById('dash-stat-pending').textContent = allDashRequests.filter(r=>r.status==='pending').length;
+  document.getElementById('dash-stat-progress').textContent = allDashRequests.filter(r=>r.status==='in_progress').length;
+  document.getElementById('dash-stat-done').textContent = allDashRequests.filter(r=>r.resolved).length;
+}
+
+function filterDashRequests() {
+  const q = document.getElementById('dash-search').value.toLowerCase();
+  const s = document.getElementById('dash-status-filter').value;
+  const p = document.getElementById('dash-priority-filter').value;
+  let filtered = allDashRequests.filter(r => {
+    const matchQ = !q || (r.name||'').toLowerCase().includes(q) || (r.email||'').toLowerCase().includes(q) || (r.description||'').toLowerCase().includes(q);
+    const matchS = s==='all' || r.status===s;
+    const matchP = p==='all' || r.priority===p;
+    return matchQ && matchS && matchP;
+  });
+  const list = document.getElementById('dash-requests-list');
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="card text-center py-12" style="color:var(--purple);">Nenašli sa žiadne žiadosti</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(r => {
+    const typeMap = {finding_investor:'Hľadanie investora',finding_employee:'Hľadanie zamestnanca',speaking_event:'Speaking event',marketing_support:'Marketing',sales_support:'Sales',finding_clients:'Hľadanie klientov',other:'Iné'};
+    const userTypeMap = {startup:'Startup',investor:'Investor',service_provider:'Service Provider',community_member:'Člen komunity'};
+    return `<div class="card card-hover">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <h3 style="font-size:17px;font-weight:900;color:var(--navy);">${r.name||'—'}</h3>
+            ${priorityBadge(r.priority)}
+            ${statusBadge(r.status)}
+          </div>
+          <p style="font-size:13px;color:var(--purple);margin-bottom:8px;">${r.email||''}</p>
+          ${r.company ? `<p style="font-size:13px;color:var(--purple);margin-bottom:8px;"><strong>Spoločnosť:</strong> ${r.company}</p>` : ''}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;margin-top:12px;">
+            <div><span style="color:var(--purple);">Typ používateľa:</span> <strong style="color:var(--navy);">${userTypeMap[r.userType]||r.userType||'—'}</strong></div>
+            <div><span style="color:var(--purple);">Typ žiadosti:</span> <strong style="color:var(--navy);">${typeMap[r.requestType]||r.requestType||'—'}</strong></div>
+            <div><span style="color:var(--purple);">Zdroj:</span> <strong style="color:var(--navy);">${r.source||'—'}</strong></div>
+            <div><span style="color:var(--purple);">Vytvorené:</span> <strong style="color:var(--navy);">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('sk-SK') : '—'}</strong></div>
+          </div>
+          <p style="font-size:13px;color:var(--purple);margin-top:12px;"><strong style="color:var(--navy);">Popis:</strong> ${r.description||''}</p>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Admin ────────────────────────────────────────────────────
+async function loadAdminRequests() {
+  try {
+    const res = await fetch(`${API}/requests`, { headers: GET_headers });
+    const data = await res.json();
+    allAdminRequests = data.requests || [];
+    renderKanban();
+    renderMatchmaking();
+  } catch {}
+}
+
+async function loadTeamMembers() {
+  try {
+    const res = await fetch(`${API}/team`, { headers: GET_headers });
+    const data = await res.json();
+    allTeamMembers = data.team || [];
+    renderTeam();
+  } catch {}
+}
+
+function renderKanban() {
+  const pending = allAdminRequests.filter(r=>r.status==='pending');
+  const progress = allAdminRequests.filter(r=>r.status==='in_progress');
+  const done = allAdminRequests.filter(r=>r.resolved);
+
+  document.getElementById('k-pending-count').textContent = pending.length;
+  document.getElementById('k-progress-count').textContent = progress.length;
+  document.getElementById('k-done-count').textContent = done.length;
+
+  const kanbanCard = (r) => `<div class="card" style="padding:12px;cursor:pointer;" onclick="">
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+      <strong style="font-size:14px;color:var(--navy);">${r.name||'—'}</strong>
+      ${priorityBadge(r.priority)}
+    </div>
+    <p style="font-size:12px;color:var(--purple);margin-bottom:8px;">${(r.description||'').substring(0,80)}${(r.description||'').length>80?'...':''}</p>
+    <button class="btn btn-secondary btn-sm w-full" style="font-size:12px;" onclick="adminUpdateReq('${r.id}','${r.status==='pending'?'in_progress':'resolved'}')">
+      ${r.status==='pending' ? 'Začať' : 'Vyriešiť'}
+    </button>
+  </div>`;
+
+  document.getElementById('k-pending').innerHTML = pending.map(kanbanCard).join('') || '<p style="text-align:center;color:var(--purple);font-size:13px;padding:16px;">Žiadne</p>';
+  document.getElementById('k-progress').innerHTML = progress.map(kanbanCard).join('') || '<p style="text-align:center;color:var(--purple);font-size:13px;padding:16px;">Žiadne</p>';
+  document.getElementById('k-done').innerHTML = done.map(kanbanCard).join('') || '<p style="text-align:center;color:var(--purple);font-size:13px;padding:16px;">Žiadne</p>';
+}
+
+async function adminUpdateReq(id, status) {
+  try {
+    await fetch(`${API}/requests/${id}`, {
+      method: 'PUT', headers,
+      body: JSON.stringify({ status, resolved: status==='resolved' })
+    });
+    showToast('Žiadosť aktualizovaná', 'success');
+    loadAdminRequests();
+  } catch { showToast('Chyba', 'error'); }
+}
+
+function renderTeam() {
+  const grid = document.getElementById('admin-team-grid');
+  if (allTeamMembers.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--purple);">Zatiaľ neboli pridaní žiadni členovia tímu</div>';
+    return;
+  }
+  grid.innerHTML = allTeamMembers.map(m => `<div class="card">
+    <div style="display:flex;align-items:start;gap:12px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:900;flex-shrink:0;">${(m.name||'?')[0]}</div>
+      <div>
+        <div style="font-weight:900;color:var(--navy);">${m.name}</div>
+        <div style="font-size:13px;color:var(--purple);">${m.role}</div>
+        <div style="font-size:12px;color:var(--silver);margin-top:2px;">${m.email}</div>
+        ${m.expertise&&m.expertise.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">${m.expertise.map(e=>`<span class="badge badge-gray">${e}</span>`).join('')}</div>`:''}
+      </div>
+    </div>
+  </div>`).join('');
+}
+
+function renderMatchmaking() {
+  const list = document.getElementById('admin-matchmaking-list');
+  const active = allAdminRequests.filter(r=>!r.resolved);
+  if (active.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:var(--purple);">Žiadne aktívne žiadosti</p>';
+    return;
+  }
+  list.innerHTML = active.map(r => `<div class="card" style="display:flex;align-items:start;justify-content:space-between;gap:16px;">
+    <div><div style="font-weight:900;color:var(--navy);">${r.name}</div><div style="font-size:13px;color:var(--purple);">${r.requestType||'—'}</div>${r.assignedTo?`<div style="font-size:13px;color:#2563eb;margin-top:4px;">👥 Pridelené: ${r.assignedTo}</div>`:''}</div>
+    <button class="btn btn-secondary btn-sm" onclick="">🎯 Nájsť match</button>
+  </div>`).join('');
+}
+
+async function submitTeamMember(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true;
+  try {
+    const expertise = document.getElementById('tm-expertise').value.split(',').map(x=>x.trim()).filter(Boolean);
+    const res = await fetch(`${API}/team`, {
+      method: 'POST', headers,
+      body: JSON.stringify({
+        name: document.getElementById('tm-name').value,
+        role: document.getElementById('tm-role').value,
+        email: document.getElementById('tm-email').value,
+        expertise
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Člen tímu bol pridaný', 'success');
+      closeModal('add-team-modal');
+      e.target.reset();
+      loadTeamMembers();
+    } else throw new Error(data.error);
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { btn.disabled = false; }
+}
+
+// ─── Create Ticket ────────────────────────────────────────────
+async function submitCreateTicket(e) {
+  e.preventDefault();
+  const btn = document.getElementById('ct-btn');
+  const errEl = document.getElementById('ct-error');
+  const succEl = document.getElementById('ct-success');
+  btn.disabled = true;
+  btn.textContent = 'Vytváranie...';
+  errEl.classList.add('hidden');
+  succEl.classList.add('hidden');
+
+  try {
+    const res = await fetch(`${API}/tickets`, {
+      method: 'POST', headers,
+      body: JSON.stringify({
+        meno: document.getElementById('ct-meno').value,
+        email: document.getElementById('ct-email').value,
+        opisProblemu: document.getElementById('ct-opis').value,
+        zakaznik: document.getElementById('ct-zakaznik').value,
+        status: document.getElementById('ct-status').value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Chyba pri vytváraní');
+    succEl.classList.remove('hidden');
+    e.target.reset();
+    setTimeout(() => succEl.classList.add('hidden'), 5000);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📤 Vytvoriť ticket';
+  }
+}
+
+// ─── Request Form ─────────────────────────────────────────────
+async function submitRequest(e) {
+  e.preventDefault();
+  const btn = document.getElementById('req-btn');
+  const errEl = document.getElementById('req-error');
+  btn.disabled = true;
+  btn.textContent = 'Odosiela sa...';
+  errEl.classList.add('hidden');
+
+  try {
+    const res = await fetch(`${API}/requests`, {
+      method: 'POST', headers,
+      body: JSON.stringify({
+        name: document.getElementById('req-name').value,
+        email: document.getElementById('req-email').value,
+        company: document.getElementById('req-company').value,
+        userType: document.getElementById('req-user-type').value,
+        requestType: document.getElementById('req-type').value,
+        description: document.getElementById('req-description').value,
+        priority: 'medium', source: 'web'
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast('Žiadosť bola úspešne odoslaná!', 'success');
+    closeModal('request-modal');
+    e.target.reset();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Odoslať žiadosť';
+  }
+}
+
+// ─── Demo Data ────────────────────────────────────────────────
+const demoTickets = [
+  { meno:'Peter Novák', email:'peter.novak@example.com', opisProblemu:'Potrebujem pomoc s nastavením nového účtu v systéme. Nemôžem sa prihlásiť.', zakaznik:'Ján Horák', status:'novy' },
+  { meno:'Eva Kováčová', email:'eva.kovacova@example.com', opisProblemu:'Mám problém s fakturáciou. Faktúra sa nezobrazuje správne.', zakaznik:'Ján Horák', status:'novy' },
+  { meno:'Martin Szabó', email:'martin.szabo@example.com', opisProblemu:'Chcel by som pridať nového používateľa do tímu, ale neviem ako na to.', zakaznik:'Mária Vargová', status:'novy' },
+  { meno:'Lucia Tóthová', email:'lucia.tothova@example.com', opisProblemu:'Exportovanie dát nefunguje. Keď kliknem na tlačidlo Export, nič sa nestane.', zakaznik:'Mária Vargová', status:'v_progrese' },
+  { meno:'Tomáš Balog', email:'tomas.balog@example.com', opisProblemu:'Potrebujem zmeniť email adresu v profile, ale systém mi to nedovolí.', zakaznik:'Peter Molnár', status:'novy' }
+];
+
+async function createDemoTickets() {
+  const btn = document.getElementById('demo-btn');
+  const statusEl = document.getElementById('demo-status');
+  btn.disabled = true;
+  btn.textContent = 'Vytváram...';
+  statusEl.className = 'alert alert-info';
+  statusEl.textContent = 'Vytváram demo tickety...';
+  statusEl.classList.remove('hidden');
+
+  let ok = 0, fail = 0;
+  for (const t of demoTickets) {
+    try {
+      const res = await fetch(`${API}/tickets`, { method:'POST', headers, body: JSON.stringify(t) });
+      if (res.ok) ok++; else fail++;
+    } catch { fail++; }
+  }
+
+  statusEl.className = `alert ${fail===0?'alert-success':'alert-warning'}`;
+  statusEl.textContent = `${fail===0?'✓ Hotovo!':'⚠ Dokončené s chybami'} Vytvorené: ${ok}, Chyby: ${fail}`;
+  btn.disabled = false;
+  btn.innerHTML = '🗄️ Vytvoriť demo tickety';
+}
+
+// ─── DB Schema ────────────────────────────────────────────────
+const empNameCols = ['name','meno','full_name','employee_name','first_name','display_name'];
+const custCols = ['meno','name','customer_name','client_name','contact_name','first_name'];
+const assignCols = ['zakaznik','zamestnanec','employee','assigned_to','employee_name','assignee','handler'];
+
+function colBadgeClass(col) {
+  if (empNameCols.includes(col)) return 'col-badge-emp';
+  if (custCols.includes(col)) return 'col-badge-cust';
+  if (assignCols.includes(col)) return 'col-badge-assign';
+  return 'col-badge-default';
+}
+
+async function loadDbSchemas() {
+  document.getElementById('db-schema-loading').classList.remove('hidden');
+  document.getElementById('db-schema-content').classList.add('hidden');
+  document.getElementById('db-schema-error').classList.add('hidden');
+
+  try {
+    const [empRes, tickRes] = await Promise.all([
+      fetch(`${API}/schema/employees`, { headers: GET_headers }),
+      fetch(`${API}/schema/tickets`, { headers: GET_headers })
+    ]);
+    const empData = await empRes.json();
+    const tickData = await tickRes.json();
+
+    if (empData.success) {
+      document.getElementById('emp-col-count').textContent = `${empData.columns.length} stĺpcov`;
+      document.getElementById('emp-col-badges').innerHTML = empData.columns.map(c =>
+        `<span class="col-badge ${colBadgeClass(c)}">${c}</span>`).join('');
+      document.getElementById('emp-sample-rows').innerHTML = empData.sampleRows.length
+        ? `<p style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:6px;">Vzorové záznamy:</p>` +
+          empData.sampleRows.map(r => `<div style="font-size:11px;background:rgba(202,202,221,.1);border-radius:6px;padding:8px;font-family:monospace;margin-bottom:4px;">${Object.entries(r).map(([k,v])=>`<div><span style="color:var(--purple)">${k}:</span> ${v}</div>`).join('')}</div>`).join('')
+        : '<p style="font-size:12px;color:var(--purple);font-style:italic;">Tabuľka je prázdna</p>';
+    }
+
+    if (tickData.success) {
+      document.getElementById('tick-col-count').textContent = `${tickData.columns.length} stĺpcov`;
+      document.getElementById('tick-col-badges').innerHTML = tickData.columns.map(c =>
+        `<span class="col-badge ${colBadgeClass(c)}">${c}</span>`).join('');
+      document.getElementById('tick-sample-rows').innerHTML = tickData.sampleRows.length
+        ? `<p style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:6px;">Vzorové záznamy:</p>` +
+          tickData.sampleRows.map(r => `<div style="font-size:11px;background:rgba(202,202,221,.1);border-radius:6px;padding:8px;font-family:monospace;margin-bottom:4px;">${Object.entries(r).map(([k,v])=>`<div><span style="color:var(--purple)">${k}:</span> ${String(v).substring(0,60)}</div>`).join('')}</div>`).join('')
+        : '<p style="font-size:12px;color:var(--purple);font-style:italic;">Tabuľka je prázdna</p>';
+    }
+
+    document.getElementById('db-schema-content').classList.remove('hidden');
+  } catch (err) {
+    document.getElementById('db-schema-error').textContent = err.message;
+    document.getElementById('db-schema-error').classList.remove('hidden');
+  } finally {
+    document.getElementById('db-schema-loading').classList.add('hidden');
+  }
+}
+
+async function runDbSetup() {
+  const name = document.getElementById('db-emp-name').value.trim();
+  if (!name) return;
+  const btn = document.getElementById('db-setup-btn');
+  btn.disabled = true;
+  btn.textContent = 'Spúšťam setup...';
+  document.getElementById('db-setup-result').classList.add('hidden');
+
+  try {
+    const res = await fetch(`${API}/setup-employee`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ employeeName: name, ticketNumbers: ['01010102','02110403'] })
+    });
+    const data = await res.json();
+    renderSetupResult(data);
+  } catch (err) {
+    renderSetupResult({ success: false, error: err.message });
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '👤 Vytvoriť zamestnanca & priradiť tickety';
+  }
+}
+
+function renderSetupResult(data) {
+  const el = document.getElementById('db-setup-result');
+  el.classList.remove('hidden');
+
+  const tickStatusLabel = (s) => ({
+    assigned: '✓ Priradený',
+    found_but_no_assign_column: '⚠ Nájdený, bez stĺpca priradenia',
+    not_found: '✗ Nenájdený',
+    update_failed: '✗ Chyba pri aktualizácii'
+  }[s] || s);
+
+  const tickStatusClass = (s) => ({
+    assigned: 'badge-green',
+    found_but_no_assign_column: 'badge-yellow',
+    not_found: 'badge-red',
+    update_failed: 'badge-red'
+  }[s] || 'badge-gray');
+
+  if (data.success) {
+    el.innerHTML = `
+      <div style="border:2px solid #86efac;border-radius:14px;padding:24px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+          <span style="font-size:24px;">✅</span>
+          <h3 style="font-size:18px;font-weight:900;color:#15803d;">Setup prebehol úspešne!</h3>
+        </div>
+        <div class="grid grid-lg-2 gap-6">
+          <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:16px;">
+            <h4 style="font-weight:900;color:#15803d;margin-bottom:12px;">👤 Zamestnanec</h4>
+            <div style="font-size:14px;"><strong>Meno:</strong> ${data.employee?._displayName||'—'}</div>
+            <div style="font-size:13px;font-family:monospace;color:#166534;"><strong>ID:</strong> ${data.employee?.id||'—'}</div>
+            <div style="font-size:13px;font-family:monospace;color:#166534;"><strong>Stĺpec:</strong> ${data.employee?._nameColumn||'—'}</div>
+          </div>
+          <div style="border:1px solid var(--silver);border-radius:12px;padding:16px;">
+            <h4 style="font-weight:900;color:var(--navy);margin-bottom:12px;">🎫 Tickety</h4>
+            ${(data.ticketResults||[]).map(tr => `
+              <div style="margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid var(--silver);">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <code style="font-size:13px;font-weight:700;">${tr.ticketNumber}</code>
+                  <span class="badge ${tickStatusClass(tr.status)}">${tickStatusLabel(tr.status)}</span>
+                </div>
+                ${tr.error?`<p style="font-size:11px;color:#b91c1c;margin-top:4px;">${tr.error}</p>`:''}
+                ${tr.warning?`<p style="font-size:11px;color:#92400e;margin-top:4px;">${tr.warning}</p>`:''}
+              </div>`).join('')}
+          </div>
+        </div>
+        ${data.schema?`<div style="margin-top:16px;font-size:12px;font-family:monospace;background:rgba(202,202,221,.1);border-radius:8px;padding:12px;">
+          <div><span style="color:var(--purple);">employees:</span> ${data.schema.employees.join(', ')}</div>
+          <div><span style="color:var(--purple);">tickets:</span> ${data.schema.tickets.join(', ')}</div>
+          <div><span style="color:var(--purple);">assign col:</span> ${data.schema.assignColumn||'nenájdený'}</div>
+        </div>`:''}
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div style="border:2px solid #fca5a5;border-radius:14px;padding:24px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:24px;">❌</span>
+          <h3 style="font-size:18px;font-weight:900;color:#b91c1c;">Setup zlyhal</h3>
+        </div>
+        <p style="color:#b91c1c;font-size:14px;">${data.error||'Neznáma chyba'}</p>
+        ${data.hint?`<p style="color:#991b1b;font-size:12px;margin-top:8px;">${data.hint}</p>`:''}
+      </div>`;
+  }
+}
+
+// ─── Auto-login check on load ────────────────────────────────
+(function() {
+  const role = localStorage.getItem('userRole');
+  if (role === 'employee' && localStorage.getItem('employeeName')) {
+    showPage('employee-dash');
+  } else if (role === 'customer' && localStorage.getItem('customerName')) {
+    showPage('customer-dash');
+  }
+})();
+</script>
+</body>
+</html>

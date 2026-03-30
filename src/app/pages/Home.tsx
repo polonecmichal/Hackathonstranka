@@ -48,6 +48,13 @@ export default function Home() {
               </Button>
               <Button 
                 variant="ghost" 
+                onClick={() => navigate('/db-setup')}
+                className="text-[#171642] hover:text-[#FFFFFF]"
+              >
+                db diagnostika
+              </Button>
+              <Button 
+                variant="ghost" 
                 onClick={() => navigate('/dashboard')}
                 className="text-[#171642] hover:text-[#FFFFFF]"
               >
@@ -80,7 +87,7 @@ export default function Home() {
                     kontaktujte nás
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl" aria-describedby={undefined}>
                   <DialogHeader>
                     <DialogTitle>Odoslať žiadosť</DialogTitle>
                   </DialogHeader>
@@ -125,7 +132,7 @@ export default function Home() {
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-2xl" aria-describedby={undefined}>
                     <DialogHeader>
                       <DialogTitle>Nová žiadosť</DialogTitle>
                     </DialogHeader>

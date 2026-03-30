@@ -8,6 +8,7 @@ import CreateTicket from "./pages/CreateTicket";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import DemoData from "./pages/DemoData";
 import SetupGuide from "./pages/SetupGuide";
+import DatabaseSetup from "./pages/DatabaseSetup";
 
 export const router = createBrowserRouter([
   {
@@ -45,5 +46,9 @@ export const router = createBrowserRouter([
   {
     path: "/setup",
     Component: SetupGuide,
+  },
+  {
+    path: "/db-setup",
+    Component: DatabaseSetup,
   },
 ]);

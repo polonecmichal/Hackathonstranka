@@ -7,12 +7,19 @@ import { LogOut, RefreshCw, CheckCircle2, Clock, AlertCircle, Mail, User } from 
 interface Ticket {
   id: string;
   status: string;
-  meno: string;
-  email: string;
-  opis_problemu: string;
-  zakaznik: string;
+  meno?: string;
+  name?: string;
+  customer_name?: string;
+  email?: string;
+  mail?: string;
+  opis_problemu?: string;
+  description?: string;
+  zakaznik?: string;
+  employee?: string;
+  assigned_to?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
+  [key: string]: any;
 }
 
 export default function CustomerDashboard() {
@@ -166,21 +173,21 @@ export default function CustomerDashboard() {
                     <User className="w-4 h-4 text-[#676789] mt-1 flex-shrink-0" />
                     <div>
                       <p className="text-xs text-[#676789] font-bold">Priradený</p>
-                      <p className="text-sm text-[#171642] font-bold">{ticket.zakaznik}</p>
+                      <p className="text-sm text-[#171642] font-bold">{ticket.zakaznik || ticket.employee || ticket.assigned_to || '—'}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
                     <Mail className="w-4 h-4 text-[#676789] mt-1 flex-shrink-0" />
                     <div>
                       <p className="text-xs text-[#676789] font-bold">Email</p>
-                      <p className="text-sm text-[#171642] break-all">{ticket.email}</p>
+                      <p className="text-sm text-[#171642] break-all">{ticket.email || ticket.mail || '—'}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <p className="text-xs text-[#676789] font-bold mb-1">Popis problému</p>
-                  <p className="text-sm text-[#171642] line-clamp-3">{ticket.opis_problemu}</p>
+                  <p className="text-sm text-[#171642] line-clamp-3">{ticket.opis_problemu || ticket.description || ticket.message || '—'}</p>
                 </div>
 
                 <p className="text-xs text-[#676789]">

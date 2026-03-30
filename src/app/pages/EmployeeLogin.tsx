@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
-import { LogIn, Users, UserCheck, ChevronDown } from 'lucide-react';
+import { LogIn, Users, UserCheck } from 'lucide-react';
 
 type LoginRole = 'employee' | 'customer';
 
@@ -23,64 +23,8 @@ export default function EmployeeLogin() {
   const [role, setRole] = useState<LoginRole>('employee');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loadingList, setLoadingList] = useState(false);
   const [error, setError] = useState('');
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const navigate = useNavigate();
-
-  // Load employees and unique customers on mount
-  useEffect(() => {
-    loadEmployees();
-    loadCustomers();
-  }, []);
-
-  const loadEmployees = async () => {
-    setLoadingList(true);
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-87f31c81/employees`,
-        {
-          headers: { 'Authorization': `Bearer ${publicAnonKey}` },
-        }
-      );
-      const data = await response.json();
-      if (data.success) {
-        setEmployees(data.employees || []);
-      }
-    } catch (err) {
-      console.error('Error loading employees:', err);
-    } finally {
-      setLoadingList(false);
-    }
-  };
-
-  const loadCustomers = async () => {
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-87f31c81/tickets`,
-        {
-          headers: { 'Authorization': `Bearer ${publicAnonKey}` },
-        }
-      );
-      const data = await response.json();
-      if (data.success && data.tickets) {
-        // Get unique customers by name
-        const uniqueMap = new Map<string, CustomerOption>();
-        for (const ticket of data.tickets) {
-          if (ticket.meno && !uniqueMap.has(ticket.meno.toLowerCase())) {
-            uniqueMap.set(ticket.meno.toLowerCase(), {
-              name: ticket.meno,
-              email: ticket.email || '',
-            });
-          }
-        }
-        setCustomers(Array.from(uniqueMap.values()));
-      }
-    } catch (err) {
-      console.error('Error loading customers:', err);
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,8 +91,6 @@ export default function EmployeeLogin() {
     }
   };
 
-  const currentList = role === 'employee' ? employees : customers;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#171642] to-[#676789] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -196,43 +138,18 @@ export default function EmployeeLogin() {
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-[#171642] font-bold">
-                {role === 'employee' ? 'Vyberte zamestnanca' : 'Vyberte zákazníka'}
+                {role === 'employee' ? 'Meno zamestnanca' : 'Meno zákazníka'}
               </Label>
-              
-              {/* Dropdown select from DB */}
-              <div className="relative">
-                <select
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  disabled={loading || loadingList}
-                  className="w-full h-10 px-3 pr-10 rounded-md border border-[#CACADD] bg-white text-[#171642] text-sm focus:border-[#11EDE2] focus:ring-1 focus:ring-[#11EDE2] outline-none appearance-none cursor-pointer disabled:opacity-50"
-                >
-                  <option value="">
-                    {loadingList ? 'Načítavam...' : `-- Vyberte ${role === 'employee' ? 'zamestnanca' : 'zákazníka'} --`}
-                  </option>
-                  {role === 'employee'
-                    ? employees.map((emp) => (
-                        <option key={emp.id || emp.name} value={emp.name}>
-                          {emp.name}
-                        </option>
-                      ))
-                    : customers.map((cust) => (
-                        <option key={cust.name + cust.email} value={cust.name}>
-                          {cust.name} ({cust.email})
-                        </option>
-                      ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#676789] pointer-events-none" />
-              </div>
-
-              {role === 'employee' && employees.length === 0 && !loadingList && (
-                <p className="text-xs text-[#676789]">Žiadni zamestnanci v databáze</p>
-              )}
-              {role === 'customer' && customers.length === 0 && !loadingList && (
-                <p className="text-xs text-[#676789]">Žiadni zákazníci v ticketoch</p>
-              )}
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={role === 'employee' ? 'Zadajte meno zamestnanca' : 'Zadajte meno zákazníka'}
+                required
+                disabled={loading}
+                className="border-[#CACADD] focus:border-[#11EDE2] focus:ring-[#11EDE2]"
+              />
             </div>
 
             {error && (
@@ -270,8 +187,8 @@ export default function EmployeeLogin() {
 
         <p className="text-center text-[#CACADD] mt-6 text-sm">
           {role === 'employee'
-            ? 'Vyberte svoje meno zo zoznamu zamestnancov'
-            : 'Vyberte svoje meno zo zoznamu zákazníkov'}
+            ? 'Zadajte svoje meno pre prihlásenie ako zamestnanec'
+            : 'Zadajte svoje meno pre prihlásenie ako zákazník'}
         </p>
       </div>
     </div>

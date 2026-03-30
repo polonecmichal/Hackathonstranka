@@ -15,12 +15,33 @@ import {
 interface Ticket {
   id: string;
   status: string;
-  meno: string;
-  email: string;
-  opis_problemu: string;
-  zakaznik: string;
+  // flexible column names from DB
+  meno?: string;
+  name?: string;
+  customer_name?: string;
+  email?: string;
+  mail?: string;
+  opis_problemu?: string;
+  description?: string;
+  zakaznik?: string;
+  employee?: string;
+  assigned_to?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
+  [key: string]: any; // allow any other columns
+}
+
+// helper to extract display fields from a ticket regardless of column names
+function getTicketDisplay(ticket: Ticket) {
+  const customerName =
+    ticket.meno || ticket.name || ticket.customer_name || ticket.client_name || '—';
+  const email =
+    ticket.email || ticket.mail || ticket.email_address || '—';
+  const description =
+    ticket.opis_problemu || ticket.description || ticket.message || ticket.content || ticket.opis || '—';
+  const assignedTo =
+    ticket.zakaznik || ticket.zamestnanec || ticket.employee || ticket.assigned_to || ticket.assignee || '—';
+  return { customerName, email, description, assignedTo };
 }
 
 export default function EmployeeDashboard() {
@@ -267,88 +288,91 @@ export default function EmployeeDashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tickets.map((ticket) => (
-                <div
-                  key={ticket.id}
-                  className="bg-white rounded-xl p-6 border border-[#CACADD] hover:border-[#11EDE2] hover:shadow-lg transition-all"
-                >
-                  {/* Status Badge */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold border ${getStatusBadgeClass(ticket.status)}`}>
-                      {getStatusIcon(ticket.status)}
-                      {getStatusLabel(ticket.status)}
-                    </div>
-                  </div>
-
-                  {/* Customer Info */}
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-start gap-2">
-                      <User className="w-4 h-4 text-[#676789] mt-1 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs text-[#676789] font-bold">Meno klienta</p>
-                        <p className="text-sm text-[#171642] font-bold">{ticket.meno}</p>
+              {tickets.map((ticket) => {
+                const { customerName, email, description, assignedTo } = getTicketDisplay(ticket);
+                return (
+                  <div
+                    key={ticket.id}
+                    className="bg-white rounded-xl p-6 border border-[#CACADD] hover:border-[#11EDE2] hover:shadow-lg transition-all"
+                  >
+                    {/* Status Badge */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold border ${getStatusBadgeClass(ticket.status)}`}>
+                        {getStatusIcon(ticket.status)}
+                        {getStatusLabel(ticket.status)}
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-2">
-                      <Mail className="w-4 h-4 text-[#676789] mt-1 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs text-[#676789] font-bold">Email</p>
-                        <p className="text-sm text-[#171642] break-all">{ticket.email}</p>
+                    {/* Customer Info */}
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-start gap-2">
+                        <User className="w-4 h-4 text-[#676789] mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-[#676789] font-bold">Meno klienta</p>
+                          <p className="text-sm text-[#171642] font-bold">{customerName}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <Mail className="w-4 h-4 text-[#676789] mt-1 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-[#676789] font-bold">Email</p>
+                          <p className="text-sm text-[#171642] break-all">{email}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Problem Description */}
-                  <div className="mb-4">
-                    <p className="text-xs text-[#676789] font-bold mb-1">Popis problému</p>
-                    <p className="text-sm text-[#171642] line-clamp-3">{ticket.opis_problemu}</p>
-                  </div>
+                    {/* Problem Description */}
+                    <div className="mb-4">
+                      <p className="text-xs text-[#676789] font-bold mb-1">Popis problému</p>
+                      <p className="text-sm text-[#171642] line-clamp-3">{description}</p>
+                    </div>
 
-                  {/* Timestamp */}
-                  <p className="text-xs text-[#676789] mb-4">
-                    Vytvorené: {new Date(ticket.created_at).toLocaleDateString('sk-SK', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
+                    {/* Timestamp */}
+                    <p className="text-xs text-[#676789] mb-4">
+                      Vytvorené: {new Date(ticket.created_at).toLocaleDateString('sk-SK', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
 
-                  {/* Status Actions */}
-                  <div className="flex gap-2 pt-4 border-t border-[#CACADD]">
-                    {ticket.status === 'novy' && (
-                      <Button
-                        size="sm"
-                        onClick={() => updateTicketStatus(ticket.id, 'v_progrese')}
-                        className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs"
-                      >
-                        Začať riešiť
-                      </Button>
-                    )}
-                    {(ticket.status === 'v_progrese' || ticket.status === 'prebiehajúci') && (
-                      <Button
-                        size="sm"
-                        onClick={() => updateTicketStatus(ticket.id, 'vyrieseny')}
-                        className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs"
-                      >
-                        Označiť ako vyriešený
-                      </Button>
-                    )}
-                    {(ticket.status === 'vyrieseny' || ticket.status === 'dokončený') && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateTicketStatus(ticket.id, 'v_progrese')}
-                        className="flex-1 border-[#CACADD] text-[#171642] text-xs"
-                      >
-                        Znovu otvoriť
-                      </Button>
-                    )}
+                    {/* Status Actions */}
+                    <div className="flex gap-2 pt-4 border-t border-[#CACADD]">
+                      {ticket.status === 'novy' && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateTicketStatus(ticket.id, 'v_progrese')}
+                          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs"
+                        >
+                          Začať riešiť
+                        </Button>
+                      )}
+                      {(ticket.status === 'v_progrese' || ticket.status === 'prebiehajúci') && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateTicketStatus(ticket.id, 'vyrieseny')}
+                          className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs"
+                        >
+                          Označiť ako vyriešený
+                        </Button>
+                      )}
+                      {(ticket.status === 'vyrieseny' || ticket.status === 'dokončený') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateTicketStatus(ticket.id, 'v_progrese')}
+                          className="flex-1 border-[#CACADD] text-[#171642] text-xs"
+                        >
+                          Znovu otvoriť
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
